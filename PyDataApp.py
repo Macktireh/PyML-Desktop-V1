@@ -2,12 +2,18 @@ import os
 import sqlite3
 import tkinter as tk
 import tempfile
+import pandas as pd
+import numpy as np
 from tkinter import font
 from tkinter.constants import RADIOBUTTON, RAISED
 from tkinter import PhotoImage
 from PIL import Image, ImageTk
 # from tkinter_custom_button import TkinterCustomButton
-from tkinter.ttk import *
+from tkinter import filedialog, messagebox, ttk
+from tkinter.constants import ACTIVE
+from datetime import date, datetime
+from openpyxl import load_workbook
+from main import Api
 
 
 class PyData:
@@ -24,12 +30,24 @@ class PyData:
 
         super().__init__()
         self.initUI()
+        self.WedgetHome()
         self.widgetGetData()
         self.ViewData()
-        self.WedgetHome()
 
     def onExit(self):
         self.root.quit()
+
+    def Load_Path_Excel(self):
+        """
+        Cette fonction ouvrira l'explorateur de fichiers et 
+        affectera le chemin de fichier choisi à label_file
+        """
+        path_filename = filedialog.askopenfilename(initialdir="E:\Total\Station Data\Master data\Data source",
+                                                   title="Select A File",
+                                                   filetype=(("xlsx files", "*.xlsx"), ("All Files", "*.*")))
+    # if self.path_filename[-4:] == ".csv":
+    # self.import_path_csv = self.path_filename
+        self.test['text'] = path_filename
 
     def initUI(self):
 
@@ -127,10 +145,10 @@ class PyData:
 
         # Button import avec icon
         self.excelBtn = tk.Button(self.FrameGetData, image=self.excelIcon, text="Import data from Excel", compound='top',
-                                  height=70, width=160, bd=1, bg="#DCDCDC", command=None).place(relx=0.049, rely=0.25)
+                                  height=70, width=160, bd=1, bg="#DCDCDC", command=self.Load_Path_Excel).place(relx=0.049, rely=0.25)
 
         self.csvBtn = tk.Button(self.FrameGetData, image=self.csvIcon, text="Import data from CSV", compound='top',
-                                height=70, width=160, bd=1, bg="#DCDCDC", command=None).place(relx=0.174, rely=0.25)
+                                height=70, width=160, bd=1, bg="#DCDCDC", command=self.test).place(relx=0.174, rely=0.25)
 
         self.txtbtn = tk.Button(self.FrameGetData, image=self.txtIcon, text="Import data from TXT", compound='top',
                                 height=70, width=160, bd=1, bg="#DCDCDC", command=None).place(relx=0.299, rely=0.25)
@@ -146,23 +164,23 @@ class PyData:
 
     def WedgetHome(self):
 
-        self.PreviewData = tk.LabelFrame(
+        self.FrameHomeTransData = tk.LabelFrame(
             self.root, text="Data Processing", background="#FAEBD7").place(
             relx=0.45, rely=0.12, relheight=0.4, relwidth=0.505)
 
         self.LabelCol = tk.Label(
-            self.root, background="#FAEBD7", text="Columns :").place(relx=0.47, rely=0.15)
+            self.FrameHomeTransData, background="#FAEBD7", text="Columns :").place(relx=0.47, rely=0.15)
 
         self.RenameCol = tk.Label(
-            self.root, background="#FAEBD7", text="Rename column").place(relx=0.63, rely=0.22)
+            self.FrameHomeTransData, background="#FAEBD7", text="Rename column").place(relx=0.63, rely=0.22)
 
         self.RomeveCol = tk.Label(
-            self.root, background="#FAEBD7", text="Remove column").place(relx=0.63, rely=0.27)
+            self.FrameHomeTransData, background="#FAEBD7", text="Remove column").place(relx=0.63, rely=0.27)
 
         self.AddCol = tk.Label(
-            self.root, background="#FAEBD7", text="Add column").place(relx=0.63, rely=0.32)
+            self.FrameHomeTransData, background="#FAEBD7", text="Add column").place(relx=0.63, rely=0.32)
 
-        self.Lbox = tk.Listbox(self.PreviewData, bg="#DCDCDC")
+        self.Lbox = tk.Listbox(self.FrameHomeTransData, bg="#DCDCDC")
         self.Lbox.place(
             relx=0.46, rely=0.18, relheight=0.33, relwidth=0.15)
 
@@ -188,18 +206,25 @@ class PyData:
         self.exportIcon = PhotoImage(file="media/export.png")
         self.exportIcon = self.exportIcon.subsample(25, 25)
 
-        self.transformBtn = tk.Button(self.PreviewData, text="Transform Data", image=self.transformIcon, width=120,
+        self.transformBtn = tk.Button(self.FrameHomeTransData, text="Transform Data", image=self.transformIcon, width=120,
                                       height=50, bg='#DCDCDC', bd=1, compound='top', command=None).place(relx=0.63, rely=0.44)
-        self.refreshBtn = tk.Button(self.PreviewData, text="Refresh data", image=self.refreshIcon, width=120,
+        self.refreshBtn = tk.Button(self.FrameHomeTransData, text="Refresh data", image=self.refreshIcon, width=120,
                                     height=50, bg='#DCDCDC', bd=1, compound='top', command=None).place(relx=0.73, rely=0.44)
-        self.exportBtn = tk.Button(self.PreviewData, text="Export data", image=self.exportIcon, width=120,
+        self.exportBtn = tk.Button(self.FrameHomeTransData, text="Export data", image=self.exportIcon, width=120,
                                    height=50, bg='#DCDCDC', bd=1, compound='top', command=None).place(relx=0.83, rely=0.44)
+
+        test = tk.Label(self.FrameHomeTransData, text="dfcersgsze").place(
+            relx=0.84, rely=0.3)
 
     def ViewData(self):
 
-        self.PreviewData = tk.LabelFrame(
+        self.FrameTableData = tk.LabelFrame(
             self.root, text="Data", background="#FAEBD7").place(
             relx=0.035, rely=0.54, relheight=0.44, relwidth=0.92)
+
+    def test(self):
+        self.df = Api.Load_excel_data_1()
+        print(self.df.shape)
 
 
 app = PyData()
