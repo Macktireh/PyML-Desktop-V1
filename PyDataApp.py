@@ -13,20 +13,25 @@ from tkinter import filedialog, messagebox, ttk
 from tkinter.constants import ACTIVE
 from datetime import date, datetime
 from openpyxl import load_workbook
-from main import Api
+# from main import Api
 
 
 class PyData:
 
-    # color = {}
+    # param = {'path': ""}
+    let_user_through = False
 
     def __init__(self):
         root = tk.Tk()
         self.root = root
+        # self.root.withdraw()
         self.root.title("PyData Desktop")
         self.root.geometry("1400x800+5+5")
         self.root.iconbitmap('media/logo.ico')
         self.root.config(background="#FAEBD7")
+        self.path_import = None
+        self.path_export = None
+        self.df = ""
 
         super().__init__()
         self.initUI()
@@ -38,6 +43,9 @@ class PyData:
         self.root.quit()
 
     def Load_Path_Excel(self):
+
+        global data
+
         """
         Cette fonction ouvrira l'explorateur de fichiers et 
         affectera le chemin de fichier choisi à label_file
@@ -45,9 +53,126 @@ class PyData:
         path_filename = filedialog.askopenfilename(initialdir="E:\Total\Station Data\Master data\Data source",
                                                    title="Select A File",
                                                    filetype=(("xlsx files", "*.xlsx"), ("All Files", "*.*")))
-    # if self.path_filename[-4:] == ".csv":
-    # self.import_path_csv = self.path_filename
+
         self.test['text'] = path_filename
+        self.path_import = path_filename
+
+        # df_brut = Api.preview_data(self, self.root, self.path_import)
+
+        def preview_data(self, path):
+            global df
+
+            self.new_interface = tk.Toplevel(self.root)
+            self.new_interface.grab_set()
+            self.new_interface.title("Previous Data")
+            self.new_interface.iconbitmap('media/logo.ico')
+            self.new_interface.geometry("600x250+15+15")
+            self.new_interface.resizable(width=False, height=False)
+
+            def ok_data_V():
+                # df = pd.read_excel(self.path_import)
+
+                clear_data_tv_All_Data()
+                self.tv_All_Data["column"] = list(df.columns)
+                self.tv_All_Data["show"] = "headings"
+                for column in self.tv_All_Data["columns"]:
+                    self.tv_All_Data.heading(column, text=column)
+
+                df_rows = df.to_numpy().tolist()
+                for row in df_rows:
+                    self.tv_All_Data.insert("", "end", values=row)
+
+                for id, column in enumerate(df.columns):
+                    self.Lbox.insert(id, column)
+
+                self.new_interface.destroy()
+                return df
+
+            frame1 = tk.LabelFrame(self.new_interface, text=f"{path}")
+            frame1.place(height=180, width=530, rely=0.05, relx=0.05)
+
+            tv1 = ttk.Treeview(frame1)
+            tv1.place(relheight=1, relwidth=1)
+
+            # commande signifie mettre à jour la vue de l'axe y du widget
+            treescrolly = tk.Scrollbar(
+                frame1, orient="vertical", command=tv1.yview)
+
+            # commande signifie mettre à jour la vue axe x du widget
+            treescrollx = tk.Scrollbar(
+                frame1, orient="horizontal", command=tv1.xview)
+
+            # affecter les barres de défilement au widget Treeview
+            tv1.configure(xscrollcommand=treescrollx.set,
+                          yscrollcommand=treescrolly.set)
+
+            # faire en sorte que la barre de défilement remplisse l'axe x du widget Treeview
+            treescrollx.pack(side="bottom", fill="x")
+
+            # faire en sorte que la barre de défilement remplisse l'axe y du widget Treeview
+            treescrolly.pack(side="right", fill="y")
+
+            OkBtn_data = tk.Button(self.new_interface, text="Ok", background='#40A497', activeforeground='white', activebackground='#40A497',
+                                   command=lambda: df == ok_data_V()).place(relx=0.4, rely=0.85, height=30, width=60)
+
+            Cancel_data = tk.Button(self.new_interface, text="Cancel", background='#CCCCCC',
+                                    command=self.new_interface.destroy).place(relx=0.5, rely=0.85, height=30, width=60)
+
+            def Load_excel_data_1():
+                """Si le fichier sélectionné est valide, cela chargera le fichier"""
+
+                try:
+                    excel_filename = r"{}".format(path)
+                    if excel_filename[-4:] == ".csv":
+                        df1 = pd.read_csv(excel_filename)
+
+                    else:
+                        # if sheet == "":
+                        df1 = pd.read_excel(excel_filename)
+
+                        # else:
+                        #     df1 = pd.read_excel(
+                        #         excel_filename, sheet_name=sheet)
+
+                except ValueError:
+                    tk.messagebox.showerror(
+                        "Information", "The file you have chosen is invalid")
+                    return None
+                except FileNotFoundError:
+                    tk.messagebox.showerror(
+                        "Information", f"No such file as {path}")
+                    return None
+
+                clear_data()
+                tv1["column"] = list(df1.columns)
+                tv1["show"] = "headings"
+                for column in tv1["columns"]:
+                    tv1.heading(column, text=column)
+
+                df_rows = df1.head().to_numpy().tolist()
+                for row in df_rows:
+                    tv1.insert("", "end", values=row)
+
+                return df1
+
+            def clear_data():
+                tv1.delete(*tv1.get_children())
+                return None
+
+            df = Load_excel_data_1()
+            return df
+
+        data = preview_data(self, self.path_import)
+
+        def clear_data_tv_All_Data():
+            self.tv_All_Data.delete(*self.tv_All_Data.get_children())
+            self.Lbox.delete(0, 'end')
+            # self.Lbox.delete()
+            return None
+        # return df
+
+    def transfome(self):
+        pass
 
     def initUI(self):
 
@@ -145,10 +270,10 @@ class PyData:
 
         # Button import avec icon
         self.excelBtn = tk.Button(self.FrameGetData, image=self.excelIcon, text="Import data from Excel", compound='top',
-                                  height=70, width=160, bd=1, bg="#DCDCDC", command=self.Load_Path_Excel).place(relx=0.049, rely=0.25)
+                                  height=70, width=160, bd=1, bg="#DCDCDC", command=lambda: self.df == self.Load_Path_Excel()).place(relx=0.049, rely=0.25)
 
         self.csvBtn = tk.Button(self.FrameGetData, image=self.csvIcon, text="Import data from CSV", compound='top',
-                                height=70, width=160, bd=1, bg="#DCDCDC", command=self.test).place(relx=0.174, rely=0.25)
+                                height=70, width=160, bd=1, bg="#DCDCDC", command=None).place(relx=0.174, rely=0.25)
 
         self.txtbtn = tk.Button(self.FrameGetData, image=self.txtIcon, text="Import data from TXT", compound='top',
                                 height=70, width=160, bd=1, bg="#DCDCDC", command=None).place(relx=0.299, rely=0.25)
@@ -171,8 +296,8 @@ class PyData:
         self.LabelCol = tk.Label(
             self.FrameHomeTransData, background="#FAEBD7", text="Columns :").place(relx=0.47, rely=0.15)
 
-        self.RenameCol = tk.Label(
-            self.FrameHomeTransData, background="#FAEBD7", text="Rename column").place(relx=0.63, rely=0.22)
+        self.RenameCol = tk.Button(
+            self.FrameHomeTransData, background="#DCDCDC", activebackground="#FFA500", activeforeground='white', text="Rename column", command=None).place(relx=0.63, rely=0.22, relheight=0.05, relwidth=0.08)
 
         self.RomeveCol = tk.Label(
             self.FrameHomeTransData, background="#FAEBD7", text="Remove column").place(relx=0.63, rely=0.27)
@@ -207,24 +332,64 @@ class PyData:
         self.exportIcon = self.exportIcon.subsample(25, 25)
 
         self.transformBtn = tk.Button(self.FrameHomeTransData, text="Transform Data", image=self.transformIcon, width=120,
-                                      height=50, bg='#DCDCDC', bd=1, compound='top', command=None).place(relx=0.63, rely=0.44)
+                                      height=50, bg='#DCDCDC', bd=1, compound='top', command=self.test).place(relx=0.63, rely=0.43)
         self.refreshBtn = tk.Button(self.FrameHomeTransData, text="Refresh data", image=self.refreshIcon, width=120,
-                                    height=50, bg='#DCDCDC', bd=1, compound='top', command=None).place(relx=0.73, rely=0.44)
+                                    height=50, bg='#DCDCDC', bd=1, compound='top', command=None).place(relx=0.73, rely=0.43)
         self.exportBtn = tk.Button(self.FrameHomeTransData, text="Export data", image=self.exportIcon, width=120,
-                                   height=50, bg='#DCDCDC', bd=1, compound='top', command=None).place(relx=0.83, rely=0.44)
+                                   height=50, bg='#DCDCDC', bd=1, compound='top', command=None).place(relx=0.83, rely=0.43)
 
-        test = tk.Label(self.FrameHomeTransData, text="dfcersgsze").place(
-            relx=0.84, rely=0.3)
+        self.test = tk.Label(self.FrameHomeTransData, text="dfcersgsze")
+        self.test.place(
+            relx=0.74, rely=0.3)
 
     def ViewData(self):
 
         self.FrameTableData = tk.LabelFrame(
-            self.root, text="Data", background="#FAEBD7").place(
+            self.root, text="Data", background="#FAEBD7")
+        self.FrameTableData.place(
             relx=0.035, rely=0.54, relheight=0.44, relwidth=0.92)
 
+        self.tv_All_Data = ttk.Treeview(self.FrameTableData)
+        self.tv_All_Data.place(relx=0, rely=0.1, relheight=0.9, relwidth=1)
+
+        # commande signifie mettre à jour la vue de l'axe y du widget
+        treescrolly = tk.Scrollbar(
+            self.tv_All_Data, orient="vertical", command=self.tv_All_Data.yview)
+
+        # commande signifie mettre à jour la vue axe x du widget
+        treescrollx = tk.Scrollbar(
+            self.tv_All_Data, orient="horizontal", command=self.tv_All_Data.xview)
+
+        # affecter les barres de défilement au widget Treeview
+        self.tv_All_Data.configure(xscrollcommand=treescrollx.set,
+                                   yscrollcommand=treescrolly.set)
+
+        # faire en sorte que la barre de défilement remplisse l'axe x du widget Treeview
+        treescrollx.pack(side="bottom", fill="x")
+
+        # faire en sorte que la barre de défilement remplisse l'axe y du widget Treeview
+        treescrolly.pack(side="right", fill="y")
+
+        def clear_data_tv_All_Data():
+            self.tv_All_Data.delete(*self.tv_All_Data.get_children())
+            return None
+
+        # if self.let_user_through == True:
+        #     df = pd.read_excel(self.path_import)
+
+        #     clear_data_tv_All_Data()
+        #     self.tv_All_Data["column"] = list(df.columns)
+        #     self.tv_All_Data["show"] = "headings"
+        #     for column in self.tv_All_Data["columns"]:
+        #         self.tv_All_Data.heading(column, text=column)
+
+        #     df_rows = df.to_numpy().tolist()
+        #     for row in df_rows:
+        #         self.tv_All_Data.insert("", "end", values=row)
+
     def test(self):
-        self.df = Api.Load_excel_data_1()
-        print(self.df.shape)
+        print(data)
+        # print(self.df.shape)
 
 
 app = PyData()
