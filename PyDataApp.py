@@ -1,20 +1,20 @@
-import os
-import sqlite3
-import tkinter as tk
-import tempfile
-import pandas as pd
-import numpy as np
-from tkinter import font
-from tkinter.constants import RADIOBUTTON, RAISED
-from tkinter import PhotoImage
-from PIL import Image, ImageTk
-# from tkinter_custom_button import TkinterCustomButton
-from tkinter import filedialog, messagebox, ttk
-from tkinter.constants import ACTIVE
-from datetime import date, datetime
-from openpyxl import load_workbook
-# from main import Api
-
+if True:
+    import os
+    import sqlite3
+    import tkinter as tk
+    import tempfile
+    import pandas as pd
+    import numpy as np
+    from tkinter import font
+    from tkinter.constants import RADIOBUTTON, RAISED
+    from tkinter import PhotoImage
+    from PIL import Image, ImageTk
+    # from tkinter_custom_button import TkinterCustomButton
+    from tkinter import filedialog, messagebox, ttk
+    from tkinter.constants import ACTIVE
+    from datetime import date, datetime
+    from openpyxl import load_workbook
+    # from main import Api
 
 class PyData:
 
@@ -73,17 +73,17 @@ class PyData:
             def preview_data(self, path):
                 global df
 
-                self.new_interface = tk.Toplevel(self.root)
-                self.new_interface.grab_set()
-                self.new_interface.title("Previous Data")
-                self.new_interface.iconbitmap('media/logo.ico')
-                self.new_interface.geometry("600x250+15+15")
-                self.new_interface.resizable(width=False, height=False)
+                self.preview = tk.Toplevel(self.root)
+                self.preview.grab_set()
+                self.preview.title("Previous Data")
+                self.preview.iconbitmap('media/logo.ico')
+                self.preview.geometry("600x250+15+15")
+                self.preview.resizable(width=False, height=False)
 
                 def ok_data_V():
                     # df = pd.read_excel(self.path_import)
 
-                    clear_data_tv_All_Data()
+                    clear_data_Table_Listbox()
                     self.tv_All_Data["column"] = list(df.columns)
                     self.tv_All_Data["show"] = "headings"
 
@@ -98,10 +98,10 @@ class PyData:
                     for id, column in enumerate(df.columns):
                         self.Lbox.insert(id, column)
 
-                    self.new_interface.destroy()
+                    self.preview.destroy()
                     return df
 
-                frame1 = tk.LabelFrame(self.new_interface, text=f"{path}")
+                frame1 = tk.LabelFrame(self.preview, text=f"{path}")
                 frame1.place(height=180, width=530, rely=0.05, relx=0.05)
 
                 tv1 = ttk.Treeview(frame1)
@@ -125,11 +125,11 @@ class PyData:
                 # faire en sorte que la barre de défilement remplisse l'axe y du widget Treeview
                 treescrolly.pack(side="right", fill="y")
 
-                OkBtn_data = tk.Button(self.new_interface, text="Ok", background='#40A497', activeforeground='white', activebackground='#40A497',
+                OkBtn_data = tk.Button(self.preview, text="Ok", background='#40A497', activeforeground='white', activebackground='#40A497',
                                        command=lambda: df == ok_data_V()).place(relx=0.4, rely=0.85, height=30, width=60)
 
-                Cancel_data = tk.Button(self.new_interface, text="Cancel", background='#CCCCCC',
-                                        command=self.new_interface.destroy).place(relx=0.5, rely=0.85, height=30, width=60)
+                Cancel_data = tk.Button(self.preview, text="Cancel", background='#CCCCCC',
+                                        command=self.preview.destroy).place(relx=0.5, rely=0.85, height=30, width=60)
 
                 def Load_excel_data_1():
                     """Si le fichier sélectionné est valide, cela chargera le fichier"""
@@ -178,7 +178,7 @@ class PyData:
 
             data = preview_data(self, self.path_import)
 
-            def clear_data_tv_All_Data():
+            def clear_data_Table_Listbox():
                 self.tv_All_Data.delete(*self.tv_All_Data.get_children())
                 self.Lbox.delete(0, 'end')
                 # self.Lbox.delete()
@@ -187,8 +187,8 @@ class PyData:
             tk.messagebox.showerror(
                 "Information", "You did not choose a file")
 
-    def transfome(self):
-        pass
+    def clear_data_Table(self):
+        self.tv_All_Data.delete(*self.tv_All_Data.get_children())
 
     def initUI(self):
 
@@ -320,7 +320,7 @@ class PyData:
             relx=0.72, rely=0.23, relheight=0.03, relwidth=0.17)
 
         self.RomeveCol = tk.Button(
-            self.FrameHomeTransData, background="#DCDCDC", activebackground="#C60030", activeforeground='white', text="Remove column", command=None).place(relx=0.63, rely=0.27, relheight=0.05, relwidth=0.08)
+            self.FrameHomeTransData, background="#DCDCDC", activebackground="#C60030", activeforeground='white', text="Remove column", command=self.DropColumn).place(relx=0.63, rely=0.27, relheight=0.05, relwidth=0.08)
 
         self.AddCol = tk.Button(
             self.FrameHomeTransData, background="#DCDCDC", activebackground="#004C8C", activeforeground='white', text="Add column", command=None).place(relx=0.63, rely=0.32, relheight=0.05, relwidth=0.08)
@@ -356,7 +356,7 @@ class PyData:
         self.refreshBtn = tk.Button(self.FrameHomeTransData, text="Save", image=self.refreshIcon, width=120,
                                     height=50, bg='#DCDCDC', bd=1, compound='top', command=None).place(relx=0.73, rely=0.43)
         self.exportBtn = tk.Button(self.FrameHomeTransData, text="Export data", image=self.exportIcon, width=120,
-                                   height=50, bg='#DCDCDC', bd=1, compound='top', command=None).place(relx=0.83, rely=0.43)
+                                   height=50, bg='#DCDCDC', bd=1, compound='top', command=self.ExportData).place(relx=0.83, rely=0.43)
 
         # self.test = tk.Label(self.FrameHomeTransData, text="dfcersgsze")
         # self.test.place(
@@ -390,37 +390,136 @@ class PyData:
         # faire en sorte que la barre de défilement remplisse l'axe y du widget Treeview
         treescrolly.pack(side="right", fill="y")
 
-        def clear_data_tv_All_Data():
-            self.tv_All_Data.delete(*self.tv_All_Data.get_children())
-            return None
-
-        # if self.let_user_through == True:
-        #     df = pd.read_excel(self.path_import)
-
-        #     clear_data_tv_All_Data()
-        #     self.tv_All_Data["column"] = list(df.columns)
-        #     self.tv_All_Data["show"] = "headings"
-        #     for column in self.tv_All_Data["columns"]:
-        #         self.tv_All_Data.heading(column, text=column)
-
-        #     df_rows = df.to_numpy().tolist()
-        #     for row in df_rows:
-        #         self.tv_All_Data.insert("", "end", values=row)
-
     def RenameColumnTable(self):
-        print(self.tv_All_Data.column(int(self.dct['id'])))
+        # renommer dans le treeview
+        # print(self.tv_All_Data.column(int(self.dct['id'])))
         self.tv_All_Data.heading(
             int(self.dct['id']), text=self.VarEntryRename.get())
-
+        # renommer dans la listbox
         for item in self.Lbox.curselection():
             self.Lbox.delete(item)
             self.Lbox.insert(int(self.dct['id']), self.VarEntryRename.get())
-        # self.Lbox.insert(int(self.dct['id']), self.VarEntryRename.get())
-        # print(self.tv_All_Data.column(2))
+        # renommer dans le données
         data.rename(columns={
             data.columns[int(self.dct['id'])]: self.VarEntryRename.get()}, inplace=True)
-        print(data)
+        
+    def DropColumn(self):
+        
+        global ColSup
+        for i in self.Lbox.curselection():
+            ColSup = self.Lbox.get(i)
+            self.Lbox.delete(i)
+            
+        # supprimer la colonne dans le données
+        data.drop(ColSup, axis=1, inplace=True) 
+        # print(data.head(3))
+        
+            
+        # supprimer dans le treeview
+        self.clear_data_Table()
+        self.tv_All_Data["column"] = list(data.columns)
+        self.tv_All_Data["show"] = "headings"
 
+        for column in self.tv_All_Data["columns"]:
+            self.tv_All_Data.column(column, anchor='center')
+            self.tv_All_Data.heading(column, text=column)
 
+        df_rows = df.to_numpy().tolist()
+        for row in df_rows:
+            self.tv_All_Data.insert("", "end", values=row)
+
+    def ExportData(self):
+        def ExportGUI(self):
+            
+            # def update_observer_path_folder(*args):
+            #     self.path_export = self.VarEntry_path_export.get()
+            
+            def h():
+                if self.VarRadioInt.get():
+                    print(f"{self.VarEntry_path_export.get()}/{self.VarEntry_name_file.get()}.xlsx")
+                else:
+                    print(f"{self.VarEntry_path_export.get()}/{self.VarEntry_name_file.get()}.csv")
+            
+            def browse_button():
+                pth = filedialog.askdirectory()
+                self.VarEntry_path_export.set(pth)
+            
+            def CancelExport():
+                self.Exportation.destroy()
+            
+            def OkExport():
+                if self.VarEntry_path_export.get():
+                    if self.VarEntry_name_file.get():
+                        
+                        self.path_export = self.VarEntry_path_export.get() +'/'+ self.VarEntry_name_file.get()
+                        try:
+                            if self.VarRadioInt.get():
+                                try:
+                                    data.to_excel(f"{self.VarEntry_path_export.get()}/{self.VarEntry_name_file.get()}.xlsx", index=False)
+                                    
+                                    self.Exportation.destroy()
+                                except NameError or TypeError or FileNotFoundError:
+                                    tk.messagebox.showerror(
+                            "Information", "There is no data to export")
+                            else:
+                                try:
+                                    data.to_csv(f"{self.VarEntry_path_export.get()}/{self.VarEntry_name_file.get()}.csv", index=False)
+                                    
+                                    self.Exportation.destroy()
+                                except NameError or TypeError or FileNotFoundError:
+                                    tk.messagebox.showerror(
+                            "Information", "There is no data to export")
+                        except ValueError & FileNotFoundError:
+                            tk.messagebox.showerror(
+                            "Information", "incorrect destination path")
+                            
+                        # except FileNotFoundError:
+                        #     tk.messagebox.showerror(
+                        #         "Information", f"No such file as {self.path_export}.xlsx")
+                    else:
+                        tk.messagebox.showerror(
+                "Information", "Please give a name to the file")
+                else:
+                    tk.messagebox.showerror(
+                "Information", "Please choose a destination folder")
+                
+                
+
+            self.Exportation = tk.Toplevel(self.root)
+            self.Exportation.grab_set()
+            self.Exportation.title("Previous Data")
+            self.Exportation.iconbitmap('media/logo.ico')
+            self.Exportation.geometry("500x200+15+15")
+            # self.Exportation.config(background="#CCCCCC")
+            self.Exportation.resizable(width=False, height=False)
+
+            self.f_ex_1 = tk.Frame(self.Exportation)
+            self.f_ex_1.place(relx=0.05, rely=0.1)
+            
+            self.btn_path_export = tk.Button(self.f_ex_1, text="Browse", width=8, height=1, command=browse_button)
+            self.btn_path_export.grid(row=0, column=0)
+            
+            self.VarEntry_path_export = tk.StringVar()
+            # self.VarEntry_path_export.trace('w', update_observer_path_folder)
+            self.Entry_path_export = tk.Entry(self.f_ex_1, textvariable=self.VarEntry_path_export, width=60, background="#F1F1F1")
+            self.Entry_path_export.grid(row=0, column=1, padx=5)
+            
+            self.VarRadioInt = tk.IntVar()
+            self.RadioBtnCSV = tk.Radiobutton(self.Exportation, text='CSV', value=0, variable=self.VarRadioInt).place(relx=0.05, rely=0.35)
+            
+            self.RadioBtnExcel = tk.Radiobutton(self.Exportation, text='Excel', value=1, variable=self.VarRadioInt).place(relx=0.05, rely=0.45)
+            
+            self.lbl_name = tk.Label(self.Exportation, text='Name file :').place(relx=0.25, rely=0.4)
+            
+            self.VarEntry_name_file = tk.StringVar()
+            self.Entry_name_file = tk.Entry(self.Exportation, width=30, textvariable=self.VarEntry_name_file).place(relx=0.4, rely=0.4)
+            
+            self.OkExportBtn = tk.Button(self.Exportation, text="OK", background="#6DA3F4", activebackground="#0256CD", foreground='white', activeforeground='white', width=12, height=1, command=OkExport).place(relx=0.3, rely=0.8)
+            
+            self.CancelExportBtn = tk.Button(self.Exportation, text="Cancel", background="#CCCCCC", width=12, height=1, command=CancelExport).place(relx=0.5, rely=0.8)
+        
+            
+        ExportGUI(self)
+    
 app = PyData()
 app.root.mainloop()
