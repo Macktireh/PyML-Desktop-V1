@@ -31,7 +31,10 @@ class PyData:
         self.root.config(background="#FAEBD7")
         self.path_import = None
         self.path_export = None
+        self.typefile = None
         self.df = ""
+        self.data_origine = pd.DataFrame()
+        self.data_pre = pd.DataFrame()
         self.dct = {
             'id': "", 'name': ""
         }
@@ -44,6 +47,38 @@ class PyData:
 
     def onExit(self):
         self.root.quit()
+    
+    def switchButtonState(self):
+            
+        if (self.RenameCol['state'] == 'disabled'):
+            self.RenameCol['state'] = 'normal'
+        else:
+            self.RenameCol['state'] = 'normal'
+            
+        if (self.RomeveCol['state'] == 'disabled'):
+            self.RomeveCol['state'] = 'normal'
+        else:
+            self.RomeveCol['state'] = 'normal'
+            
+        if (self.AddCol['state'] == 'disabled'):
+            self.AddCol['state'] = 'normal'
+        else:
+            self.AddCol['state'] = 'normal'
+            
+        if (self.transformBtn['state'] == 'disabled'):
+            self.transformBtn['state'] = 'normal'
+        else:
+            self.transformBtn['state'] = 'normal'
+            
+        if (self.saveBtn['state'] == 'disabled'):
+            self.saveBtn['state'] = 'normal'
+        else:
+            self.saveBtn['state'] = 'normal'
+            
+        if (self.exportBtn['state'] == 'disabled'):
+            self.exportBtn['state'] = 'normal'
+        else:
+            self.exportBtn['state'] = 'normal'
 
     def selected_item_1(self):
         for i in self.Lbox.curselection():
@@ -53,19 +88,32 @@ class PyData:
             self.VarEntryRename.set("")
             self.VarEntryRename.set(self.Lbox.get(i))
             self.dct['id'] = i
-            self.dct['name'] = self.Lbox.get(i)
+            self.dct['name'] = self.Lbox.get(i)    
 
     def Load_Path_Excel(self):
 
-        global data
+        # global data_origine, data_pre
 
         """
         Cette fonction ouvrira l'explorateur de fichiers et 
         affectera le chemin de fichier choisi à label_file
         """
-        path_filename = filedialog.askopenfilename(initialdir="E:\Total\Station Data\Master data\Data source",
-                                                   title="Select A File",
-                                                   filetype=(("xlsx files", "*.xlsx"), ("All Files", "*.*")))
+        if self.typefile == "Excel":
+            path_filename = filedialog.askopenfilename(initialdir="E:\Total\Station Data\Master data\Data source",title="Select A File",
+            filetype=(("xlsx files", "*.xlsx"), ("All Files", "*.*")))
+            
+        elif self.typefile == "CSV":
+            path_filename = filedialog.askopenfilename(initialdir="E:\Total\Station Data\Master data\Data source",title="Select A File",
+            filetype=(("csv files", "*.csv"), ("All Files", "*.*")))
+        
+        elif self.typefile == "TXT":
+            path_filename = filedialog.askopenfilename(initialdir="E:\Total\Station Data\Master data\Data source",title="Select A File",
+            filetype=(("txt files", "*.txt"), ("All Files", "*.*")))
+        
+        else:
+            path_filename = filedialog.askopenfilename(initialdir="E:\Total\Station Data\Master data\Data source",title="Select A File",
+            filetype=(("All Files", "*.*")))
+            
         if path_filename:
             # self.test['text'] = path_filename
             self.path_import = path_filename
@@ -79,6 +127,9 @@ class PyData:
                 self.preview.iconbitmap('media/logo.ico')
                 self.preview.geometry("600x250+15+15")
                 self.preview.resizable(width=False, height=False)
+                
+
+                    
 
                 def ok_data_V():
                     # df = pd.read_excel(self.path_import)
@@ -97,6 +148,8 @@ class PyData:
 
                     for id, column in enumerate(df.columns):
                         self.Lbox.insert(id, column)
+                    
+                    self.switchButtonState()
 
                     self.preview.destroy()
                     return df
@@ -129,7 +182,7 @@ class PyData:
                                        command=lambda: df == ok_data_V()).place(relx=0.4, rely=0.85, height=30, width=60)
 
                 Cancel_data = tk.Button(self.preview, text="Cancel", background='#CCCCCC',
-                                        command=self.preview.destroy).place(relx=0.5, rely=0.85, height=30, width=60)
+                                        command=self.CancelPreviwData).place(relx=0.5, rely=0.85, height=30, width=60)
 
                 def Load_excel_data_1():
                     """Si le fichier sélectionné est valide, cela chargera le fichier"""
@@ -139,6 +192,9 @@ class PyData:
                         if excel_filename[-4:] == ".csv":
                             df1 = pd.read_csv(excel_filename)
 
+                        elif excel_filename[-4:] == ".txt":
+                            df1 = pd.read_table(excel_filename)
+                            
                         else:
                             # if sheet == "":
                             df1 = pd.read_excel(excel_filename)
@@ -176,7 +232,9 @@ class PyData:
                 df = Load_excel_data_1()
                 return df
 
-            data = preview_data(self, self.path_import)
+            self.data_origine = preview_data(self, self.path_import)
+            self.data_pre = self.data_origine.copy()
+            
 
             def clear_data_Table_Listbox():
                 self.tv_All_Data.delete(*self.tv_All_Data.get_children())
@@ -186,10 +244,27 @@ class PyData:
         else:
             tk.messagebox.showerror(
                 "Information", "You did not choose a file")
+    
+    def Excel(self):
+        self.typefile = "Excel"
+        self.Load_Path_Excel()
+           
+    def CSV(self):
+        self.typefile = "CSV"
+        self.Load_Path_Excel()
+          
+    def TXT(self):
+        self.typefile = "TXT"
+        self.Load_Path_Excel()
 
     def clear_data_Table(self):
         self.tv_All_Data.delete(*self.tv_All_Data.get_children())
 
+    def CancelPreviwData(self):
+        self.data_origine = pd.DataFrame()
+        self.data_pre = pd.DataFrame()
+        self.preview.destroy()
+                
     def initUI(self):
 
         self.menubar = tk.Menu(self.root, background='#856ff8', fg='white')
@@ -286,13 +361,13 @@ class PyData:
 
         # Button import avec icon
         self.excelBtn = tk.Button(self.FrameGetData, image=self.excelIcon, text="Import data from Excel", compound='top',
-                                  height=70, width=160, bd=1, bg="#DCDCDC", command=lambda: self.df == self.Load_Path_Excel()).place(relx=0.049, rely=0.25)
+                                  height=70, width=160, bd=1, bg="#DCDCDC", command=self.Excel).place(relx=0.049, rely=0.25)
 
         self.csvBtn = tk.Button(self.FrameGetData, image=self.csvIcon, text="Import data from CSV", compound='top',
-                                height=70, width=160, bd=1, bg="#DCDCDC", command=None).place(relx=0.174, rely=0.25)
+                                height=70, width=160, bd=1, bg="#DCDCDC", command=self.CSV).place(relx=0.174, rely=0.25)
 
         self.txtbtn = tk.Button(self.FrameGetData, image=self.txtIcon, text="Import data from TXT", compound='top',
-                                height=70, width=160, bd=1, bg="#DCDCDC", command=None).place(relx=0.299, rely=0.25)
+                                height=70, width=160, bd=1, bg="#DCDCDC", command=self.TXT).place(relx=0.299, rely=0.25)
 
         self.postgrebtn = tk.Button(self.FrameGetData, image=self.postgreIcon, text="Import data from PostgreSQL", compound='top',
                                     height=70, width=160, bd=1, bg="#DCDCDC", command=None).place(relx=0.049, rely=0.37)
@@ -313,17 +388,20 @@ class PyData:
             self.FrameHomeTransData, background="#FAEBD7", text="Columns :").place(relx=0.47, rely=0.15)
 
         self.RenameCol = tk.Button(
-            self.FrameHomeTransData, background="#DCDCDC", activebackground="#FFA500", activeforeground='white', text="Rename column", command=self.selected_item_1).place(relx=0.63, rely=0.22, relheight=0.05, relwidth=0.08)
+            self.FrameHomeTransData, background="#DCDCDC", activebackground="#FFA500", activeforeground='white', text="Rename column", command=self.selected_item_1, state='disabled')
+        self.RenameCol.place(relx=0.63, rely=0.22, relheight=0.05, relwidth=0.08)
 
         self.VarEntryRename = tk.StringVar()
         self.Entry_RenameColumn = tk.Entry(self.FrameHomeTransData, textvariable=self.VarEntryRename).place(
             relx=0.72, rely=0.23, relheight=0.03, relwidth=0.17)
 
         self.RomeveCol = tk.Button(
-            self.FrameHomeTransData, background="#DCDCDC", activebackground="#C60030", activeforeground='white', text="Remove column", command=self.DropColumn).place(relx=0.63, rely=0.27, relheight=0.05, relwidth=0.08)
+            self.FrameHomeTransData, background="#DCDCDC", activebackground="#C60030", activeforeground='white', text="Remove column", command=self.DropColumn, state='disabled')
+        self.RomeveCol.place(relx=0.63, rely=0.27, relheight=0.05, relwidth=0.08)
 
         self.AddCol = tk.Button(
-            self.FrameHomeTransData, background="#DCDCDC", activebackground="#004C8C", activeforeground='white', text="Add column", command=None).place(relx=0.63, rely=0.32, relheight=0.05, relwidth=0.08)
+            self.FrameHomeTransData, background="#DCDCDC", activebackground="#004C8C", activeforeground='white', text="Add column", command=None, state='disabled')
+        self.AddCol.place(relx=0.63, rely=0.32, relheight=0.05, relwidth=0.08)
 
         self.Lbox = tk.Listbox(self.FrameHomeTransData, bg="#DCDCDC")
         self.Lbox.place(
@@ -345,18 +423,22 @@ class PyData:
         self.transformIcon = PhotoImage(file="media/transform.png")
         self.transformIcon = self.transformIcon.subsample(30, 30)
 
-        self.refreshIcon = PhotoImage(file="media/save.png")
-        self.refreshIcon = self.refreshIcon.subsample(30, 30)
+        self.saveIcon = PhotoImage(file="media/save.png")
+        self.saveIcon = self.saveIcon.subsample(30, 30)
 
         self.exportIcon = PhotoImage(file="media/export.png")
         self.exportIcon = self.exportIcon.subsample(25, 25)
 
         self.transformBtn = tk.Button(self.FrameHomeTransData, text="Transform Data", image=self.transformIcon, width=120,
-                                      height=50, bg='#DCDCDC', bd=1, compound='top', command=self.RenameColumnTable).place(relx=0.63, rely=0.43)
-        self.refreshBtn = tk.Button(self.FrameHomeTransData, text="Save", image=self.refreshIcon, width=120,
-                                    height=50, bg='#DCDCDC', bd=1, compound='top', command=None).place(relx=0.73, rely=0.43)
+                                      height=50, bg='#DCDCDC', bd=1, compound='top', command=self.RenameColumnTable, state='disabled')
+        self.transformBtn.place(relx=0.63, rely=0.43)
+        
+        self.saveBtn = tk.Button(self.FrameHomeTransData, text="Save", image=self.saveIcon, width=120,height=50, bg='#DCDCDC', bd=1, compound='top', command=None, state='disabled')
+        self.saveBtn.place(relx=0.73, rely=0.43)
+        
         self.exportBtn = tk.Button(self.FrameHomeTransData, text="Export data", image=self.exportIcon, width=120,
-                                   height=50, bg='#DCDCDC', bd=1, compound='top', command=self.ExportData).place(relx=0.83, rely=0.43)
+                                   height=50, bg='#DCDCDC', bd=1, compound='top', command=self.ExportData, state='disabled')
+        self.exportBtn.place(relx=0.83, rely=0.43)
 
         # self.test = tk.Label(self.FrameHomeTransData, text="dfcersgsze")
         # self.test.place(
@@ -400,8 +482,8 @@ class PyData:
             self.Lbox.delete(item)
             self.Lbox.insert(int(self.dct['id']), self.VarEntryRename.get())
         # renommer dans le données
-        data.rename(columns={
-            data.columns[int(self.dct['id'])]: self.VarEntryRename.get()}, inplace=True)
+        self.data_pre.rename(columns={
+            self.data_pre.columns[int(self.dct['id'])]: self.VarEntryRename.get()}, inplace=True)
         
     def DropColumn(self):
         
@@ -411,20 +493,20 @@ class PyData:
             self.Lbox.delete(i)
             
         # supprimer la colonne dans le données
-        data.drop(ColSup, axis=1, inplace=True) 
+        self.data_pre.drop(ColSup, axis=1, inplace=True) 
         # print(data.head(3))
         
             
         # supprimer dans le treeview
         self.clear_data_Table()
-        self.tv_All_Data["column"] = list(data.columns)
+        self.tv_All_Data["column"] = list(self.data_pre.columns)
         self.tv_All_Data["show"] = "headings"
 
         for column in self.tv_All_Data["columns"]:
             self.tv_All_Data.column(column, anchor='center')
             self.tv_All_Data.heading(column, text=column)
 
-        df_rows = df.to_numpy().tolist()
+        df_rows = self.data_pre.to_numpy().tolist()
         for row in df_rows:
             self.tv_All_Data.insert("", "end", values=row)
 
@@ -455,7 +537,7 @@ class PyData:
                         try:
                             if self.VarRadioInt.get():
                                 try:
-                                    data.to_excel(f"{self.VarEntry_path_export.get()}/{self.VarEntry_name_file.get()}.xlsx", index=False)
+                                    self.data_pre.to_excel(f"{self.VarEntry_path_export.get()}/{self.VarEntry_name_file.get()}.xlsx", index=False)
                                     
                                     self.Exportation.destroy()
                                 except NameError or TypeError or FileNotFoundError:
@@ -463,7 +545,7 @@ class PyData:
                             "Information", "There is no data to export")
                             else:
                                 try:
-                                    data.to_csv(f"{self.VarEntry_path_export.get()}/{self.VarEntry_name_file.get()}.csv", index=False)
+                                    self.data_pre.to_csv(f"{self.VarEntry_path_export.get()}/{self.VarEntry_name_file.get()}.csv", index=False)
                                     
                                     self.Exportation.destroy()
                                 except NameError or TypeError or FileNotFoundError:
