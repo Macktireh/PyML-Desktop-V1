@@ -191,13 +191,19 @@ class PyData:
                         excel_filename = r"{}".format(path)
                         if excel_filename[-4:] == ".csv":
                             df1 = pd.read_csv(excel_filename)
+                            df1.reset_index(inplace=True)
+                            df1 = df1.rename(columns = {'index':'Id'})
 
                         elif excel_filename[-4:] == ".txt":
                             df1 = pd.read_table(excel_filename)
+                            df1.reset_index(inplace=True)
+                            df1 = df1.rename(columns = {'index':'Id'})
                             
                         else:
                             # if sheet == "":
                             df1 = pd.read_excel(excel_filename)
+                            df1.reset_index(inplace=True)
+                            df1 = df1.rename(columns = {'index':'Id'})
 
                             # else:
                             #     df1 = pd.read_excel(
