@@ -7,6 +7,7 @@ if True:
     import numpy as np
     from tkinter import font
     from tkinter.constants import RADIOBUTTON, RAISED
+    from tkinter.scrolledtext import ScrolledText
     from tkinter import PhotoImage
     from PIL import Image, ImageTk
     # from tkinter_custom_button import TkinterCustomButton
@@ -14,6 +15,7 @@ if True:
     from tkinter.constants import ACTIVE
     from datetime import date, datetime
     from openpyxl import load_workbook
+    import psycopg2
     # from main import Api
 
 class PyData:
@@ -38,6 +40,10 @@ class PyData:
         self.dct = {
             'id': "", 'name': ""
         }
+        self.requete_sql = ""
+        self.password = ""
+        self.username = ""
+        
 
         super().__init__()
         self.initUI()
@@ -46,9 +52,119 @@ class PyData:
         self.ViewData()
 
     def onExit(self):
+        """cette fonction permet de quiter la logiciel"""
         self.root.quit()
+        
+    def Load_Data_PosgreSQL(self):
+        self.window_postgresql = tk.Toplevel(self.root)
+        self.window_postgresql.grab_set()
+        self.window_postgresql.title("Connection PostgreSQL")
+        self.window_postgresql.iconbitmap('media/logo.ico')
+        self.window_postgresql.geometry("500x600+15+15")
+        self.window_postgresql.resizable(width=False, height=False)
+        
+        def window_password_user():
+            """cette fonction permet d'ouvrir une petite fenetre qui permet d'écrire le password et user."""
+
+            
+            password_user = tk.Toplevel(self.window_postgresql)
+            password_user.grab_set()
+            password_user.title("Previous Data")
+            password_user.iconbitmap('media/logo.ico')
+            password_user.geometry("250x200")
+            password_user.resizable(width=False, height=False)
+            
+            def Cancel_widow_password_user():
+                password_user.destroy()
+            
+            def Requete_SQL():
+            
+                self.password = VarEntryUser.get()
+                self.username = VarEntrypassword.get()
+                
+                self.requete_sql = self.text_sql.get('1.0', 'end-1c')
+                connexion = psycopg2.connect(dbname=f"{self.VarEntry_dbname.get()}", user=f"{VarEntryUser.get()}", password=f"{VarEntrypassword.get()}", port=f"{self.VarEntry_port.get()}")
+                cur = connexion.cursor()
+                cur.execute(f"{self.text_sql.get('1.0', 'end-1c')}")
+                row = cur.fetchall()
+
+                df = pd.DataFrame(row, 
+                                columns=['pays', 'population', 'date', 'nb_cas', 'nb_mort', 'nb_gueri', 'nb_teste', 'nb_rea'] )
+                print(df.head())
+                # print(self.password)
+                # print(self.username)
+                # print(self.VarEntry_dbname.get())
+                # print(self.VarEntry_port.get())
+                # print(self.text_sql.get('1.0', 'end-1c'))
+                
+                
+                
+            lbl_user = tk.Label(password_user, text="User Name", font=("Helvetica", 9)).place(relx=0.1, rely=0.1)
+            VarEntryUser = tk.StringVar()
+            VarEntryUser.set("enterprisedb")
+            EntryUser = tk.Entry(password_user, textvariable=VarEntryUser, width=30).place(relx=0.1, rely=0.2)
+            
+            lbl_password = tk.Label(password_user, text="Password", font=("Helvetica", 9)).place(relx=0.1, rely=0.35)
+            VarEntrypassword = tk.StringVar()
+            VarEntrypassword.set("charco97")
+            Entrypassword = tk.Entry(password_user, textvariable=VarEntrypassword, width=30, show="*").place(relx=0.1, rely=0.45)
+            
+            OkAuthentication = tk.Button(password_user, text="OK", command=Requete_SQL, width=10)
+            OkAuthentication.place(relx=0.18, rely=0.8)
+            CancelAuthentication = tk.Button(password_user, text="Cancel", command=Cancel_widow_password_user, width=10)
+            CancelAuthentication.place(relx=0.52, rely=0.8)
+            
+            
+            
+        def Cancel_widow_prosgresql():
+            self.window_postgresql.destroy()
+        
+        
+        # Importation de l'icone de progresql
+        self.img = PhotoImage(file="media/postgresql.png")
+        self.img = self.img.subsample(20, 20)
+        
+        # afficher l'icone de progresql
+        self.print_img = tk.Label(self.window_postgresql, image=self.img, width=140, height=140)
+        self.print_img.place(relx=0.01, rely=0.01)
+        
+        #  label de titre progresql
+        self.lbl_title = tk.Label(self.window_postgresql, text="PostgreSQL database", font=("Helvetica", 20))
+        self.lbl_title.place(relx=0.35, rely=0.07)
+        
+        # label de Database
+        self.lbl_dbname = tk.Label(self.window_postgresql, text="Database", font=("Helvetica", 12)).place(relx=0.07, rely=0.3)
+        # Entry de Database
+        self.VarEntry_dbname = tk.StringVar()
+        self.VarEntry_dbname.set("covid")
+        self.Entry_dbname = tk.Entry(self.window_postgresql, textvariable=self.VarEntry_dbname, width=40)
+        self.Entry_dbname.place(relx=0.28, rely=0.3)
+
+        # label de Port
+        self.lbl_port = tk.Label(self.window_postgresql, text="Port", font=("Helvetica", 12)).place(relx=0.07, rely=0.35)
+        # Entry de Port
+        self.VarEntry_port = tk.StringVar()
+        self.VarEntry_port.set("5444")
+        self.Entry_port = tk.Entry(self.window_postgresql, textvariable=self.VarEntry_port, width=40)
+        self.Entry_port.place(relx=0.28, rely=0.35)
+        
+        # label Text Widget pour ecrire su sql
+        self.lbl_sql = tk.Label(self.window_postgresql, text="Please write your SQL query", font=("Helvetica", 12)).place(relx=0.1, rely=0.44)
+        # Text Widget pour ecrire su sql
+        self.text_sql = ScrolledText(self.window_postgresql, font=("Helvetica", 10))
+        self.text_sql.place(relx=0.1, rely=0.48, relwidth=0.8, relheight=0.35)
+        
+            
+        self.OkPogreSQL = tk.Button(self.window_postgresql, text="OK", width=10, command=window_password_user)
+        self.OkPogreSQL.place(relx=0.33, rely=0.9)
+        
+        self.CacelPogreSQL = tk.Button(self.window_postgresql, text="Cancel", width=10, command=Cancel_widow_prosgresql)
+        self.CacelPogreSQL.place(relx=0.53, rely=0.9)
+        # pass
     
     def switchButtonState(self):
+        
+        """Cette fonction de switcher les boutons dans le volet transformation de deactive en active. Elle est appeler lorsque on clique on valide le chargement de données (le bouton ok dans le preview data)"""
             
         if (self.RenameCol['state'] == 'disabled'):
             self.RenameCol['state'] = 'normal'
@@ -80,24 +196,18 @@ class PyData:
         else:
             self.exportBtn['state'] = 'normal'
 
-    def selected_item_1(self):
-        for i in self.Lbox.curselection():
-            # var_col_name_1.set(box1.get(i))
-            # self.VarEntryRename.set(i)
+    
 
-            self.VarEntryRename.set("")
-            self.VarEntryRename.set(self.Lbox.get(i))
-            self.dct['id'] = i
-            self.dct['name'] = self.Lbox.get(i)    
+    def Load_data_file(self):
 
-    def Load_Path_Excel(self):
-
+        """
+        Cette grosse fonction permet d'abord d'ouvrir l'explorateur et parcourir le schéma du fichier, enssuite de le prévisualiser les 5 premières lignes et enfin les données sont ok elle permet d'importer toutes les données
+        
+        Données : Excel, CSV, TXT
+        """
+        
         # global data_origine, data_pre
-
-        """
-        Cette fonction ouvrira l'explorateur de fichiers et 
-        affectera le chemin de fichier choisi à label_file
-        """
+        
         if self.typefile == "Excel":
             path_filename = filedialog.askopenfilename(initialdir="E:\Total\Station Data\Master data\Data source",title="Select A File",
             filetype=(("xlsx files", "*.xlsx"), ("All Files", "*.*")))
@@ -119,6 +229,11 @@ class PyData:
             self.path_import = path_filename
 
             def preview_data(self, path):
+            
+                """
+                Cette sous fonction de la fonction Load_data_file() permet d'imorter les données et d'ouvrir une petite fenetre afin de prévisualiser les 5 premières lignes et enfin les données sont ok elle permet d'importer toutes les données
+                """
+                
                 global df
 
                 self.preview = tk.Toplevel(self.root)
@@ -127,11 +242,12 @@ class PyData:
                 self.preview.iconbitmap('media/logo.ico')
                 self.preview.geometry("600x250+15+15")
                 self.preview.resizable(width=False, height=False)
-                
-
-                    
+                            
 
                 def ok_data_V():
+                    
+                    """Cette fonction valide les données et affiche toutes les données. Elle est relier au bouton ok pour valider"""
+                    
                     # df = pd.read_excel(self.path_import)
 
                     clear_data_Table_Listbox()
@@ -253,15 +369,15 @@ class PyData:
     
     def Excel(self):
         self.typefile = "Excel"
-        self.Load_Path_Excel()
+        self.Load_data_file()
            
     def CSV(self):
         self.typefile = "CSV"
-        self.Load_Path_Excel()
+        self.Load_data_file()
           
     def TXT(self):
         self.typefile = "TXT"
-        self.Load_Path_Excel()
+        self.Load_data_file()
 
     def clear_data_Table(self):
         self.tv_All_Data.delete(*self.tv_All_Data.get_children())
@@ -376,7 +492,7 @@ class PyData:
                                 height=70, width=160, bd=1, bg="#DCDCDC", command=self.TXT).place(relx=0.299, rely=0.25)
 
         self.postgrebtn = tk.Button(self.FrameGetData, image=self.postgreIcon, text="Import data from PostgreSQL", compound='top',
-                                    height=70, width=160, bd=1, bg="#DCDCDC", command=None).place(relx=0.049, rely=0.37)
+                                    height=70, width=160, bd=1, bg="#DCDCDC", command=self.Load_Data_PosgreSQL).place(relx=0.049, rely=0.37)
 
         self.mysqlbtn = tk.Button(self.FrameGetData, image=self.mysqlIcon, text="Import data from MySQL", compound='top',
                                   height=70, width=160, bd=1, bg="#DCDCDC", command=None).place(relx=0.174, rely=0.37)
@@ -394,7 +510,7 @@ class PyData:
             self.FrameHomeTransData, background="#FAEBD7", text="Columns :").place(relx=0.47, rely=0.15)
 
         self.RenameCol = tk.Button(
-            self.FrameHomeTransData, background="#DCDCDC", activebackground="#FFA500", activeforeground='white', text="Rename column", command=self.selected_item_1, state='disabled')
+            self.FrameHomeTransData, background="#DCDCDC", activebackground="#FFA500", activeforeground='white', text="Rename column", command=self.Def_edit_name_col_in_entry, state='disabled')
         self.RenameCol.place(relx=0.63, rely=0.22, relheight=0.05, relwidth=0.08)
 
         self.VarEntryRename = tk.StringVar()
@@ -477,6 +593,16 @@ class PyData:
 
         # faire en sorte que la barre de défilement remplisse l'axe y du widget Treeview
         treescrolly.pack(side="right", fill="y")
+
+    def Def_edit_name_col_in_entry(self):
+        for i in self.Lbox.curselection():
+            # var_col_name_1.set(box1.get(i))
+            # self.VarEntryRename.set(i)
+
+            self.VarEntryRename.set("")
+            self.VarEntryRename.set(self.Lbox.get(i))
+            self.dct['id'] = i
+            self.dct['name'] = self.Lbox.get(i)
 
     def RenameColumnTable(self):
         # renommer dans le treeview
