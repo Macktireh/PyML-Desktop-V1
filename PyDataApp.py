@@ -65,60 +65,70 @@ class PyData:
         
         def window_password_user():
             """cette fonction permet d'ouvrir une petite fenetre qui permet d'écrire le password et user."""
+            
+            if self.text_sql.get('1.0', 'end-1c') and self.VarEntry_port.get() and self.VarEntry_dbname.get:
+            
+                password_user = tk.Toplevel(self.window_postgresql)
+                password_user.grab_set()
+                password_user.title("Previous Data")
+                password_user.iconbitmap('media/logo.ico')
+                password_user.geometry("250x200")
+                password_user.resizable(width=False, height=False)
+                
+                def Cancel_widow_password_user():
+                    password_user.destroy()
+                
+                
+                def Requete_SQL():
+                    
+                    if self.text_sql.get('1.0', 'end-1c'):
+                
+                        self.password = VarEntryUser.get()
+                        self.username = VarEntrypassword.get()
+                        
+                        self.requete_sql = self.text_sql.get('1.0', 'end-1c')
+                        connexion = psycopg2.connect(dbname=f"{self.VarEntry_dbname.get()}", user=f"{VarEntryUser.get()}", password=f"{VarEntrypassword.get()}", port=f"{self.VarEntry_port.get()}")
+                        cur = connexion.cursor()
+                        cur.execute(f"{self.text_sql.get('1.0', 'end-1c')}")
+                        row = cur.fetchall()
 
-            
-            password_user = tk.Toplevel(self.window_postgresql)
-            password_user.grab_set()
-            password_user.title("Previous Data")
-            password_user.iconbitmap('media/logo.ico')
-            password_user.geometry("250x200")
-            password_user.resizable(width=False, height=False)
-            
-            def Cancel_widow_password_user():
-                password_user.destroy()
-            
-            def Requete_SQL():
-            
-                self.password = VarEntryUser.get()
-                self.username = VarEntrypassword.get()
+                        df = pd.DataFrame(row, 
+                                        columns=['pays', 'population', 'date', 'nb_cas', 'nb_mort', 'nb_gueri', 'nb_teste', 'nb_rea'] )
+                        # print(df.head())
+                        
+                        self.data_origine = df
+                        self.data_pre = self.data_origine.copy()
+                        
+                        self.path_import = f"Table data {self.VarEntry_dbname.get()} from the PostgreSQL database "
+                        
+                        self.preview_data(self.path_import, self.data_pre)
+                        
+                        password_user.destroy()  
+                        self.window_postgresql.destroy()
+                    
+                    
+                lbl_user = tk.Label(password_user, text="User Name", font=("Helvetica", 9)).place(relx=0.1, rely=0.1)
+                VarEntryUser = tk.StringVar()
+                VarEntryUser.set("enterprisedb")
+                EntryUser = tk.Entry(password_user, textvariable=VarEntryUser, width=30).place(relx=0.1, rely=0.2)
                 
-                self.requete_sql = self.text_sql.get('1.0', 'end-1c')
-                connexion = psycopg2.connect(dbname=f"{self.VarEntry_dbname.get()}", user=f"{VarEntryUser.get()}", password=f"{VarEntrypassword.get()}", port=f"{self.VarEntry_port.get()}")
-                cur = connexion.cursor()
-                cur.execute(f"{self.text_sql.get('1.0', 'end-1c')}")
-                row = cur.fetchall()
-
-                df = pd.DataFrame(row, 
-                                columns=['pays', 'population', 'date', 'nb_cas', 'nb_mort', 'nb_gueri', 'nb_teste', 'nb_rea'] )
-                print(df.head())
-                # print(self.password)
-                # print(self.username)
-                # print(self.VarEntry_dbname.get())
-                # print(self.VarEntry_port.get())
-                # print(self.text_sql.get('1.0', 'end-1c'))
+                lbl_password = tk.Label(password_user, text="Password", font=("Helvetica", 9)).place(relx=0.1, rely=0.35)
+                VarEntrypassword = tk.StringVar()
+                VarEntrypassword.set("charco97")
+                Entrypassword = tk.Entry(password_user, textvariable=VarEntrypassword, width=30, show="*").place(relx=0.1, rely=0.45)
                 
+                OkAuthentication = tk.Button(password_user, text="OK", command=Requete_SQL, width=10)
+                OkAuthentication.place(relx=0.18, rely=0.8)
+                CancelAuthentication = tk.Button(password_user, text="Cancel", command=Cancel_widow_password_user, width=10)
+                CancelAuthentication.place(relx=0.52, rely=0.8)
                 
-                
-            lbl_user = tk.Label(password_user, text="User Name", font=("Helvetica", 9)).place(relx=0.1, rely=0.1)
-            VarEntryUser = tk.StringVar()
-            VarEntryUser.set("enterprisedb")
-            EntryUser = tk.Entry(password_user, textvariable=VarEntryUser, width=30).place(relx=0.1, rely=0.2)
-            
-            lbl_password = tk.Label(password_user, text="Password", font=("Helvetica", 9)).place(relx=0.1, rely=0.35)
-            VarEntrypassword = tk.StringVar()
-            VarEntrypassword.set("charco97")
-            Entrypassword = tk.Entry(password_user, textvariable=VarEntrypassword, width=30, show="*").place(relx=0.1, rely=0.45)
-            
-            OkAuthentication = tk.Button(password_user, text="OK", command=Requete_SQL, width=10)
-            OkAuthentication.place(relx=0.18, rely=0.8)
-            CancelAuthentication = tk.Button(password_user, text="Cancel", command=Cancel_widow_password_user, width=10)
-            CancelAuthentication.place(relx=0.52, rely=0.8)
-            
-            
+            else:
+                tk.messagebox.showerror(
+            "Information", "Please the SQL query")    
+                     
             
         def Cancel_widow_prosgresql():
             self.window_postgresql.destroy()
-        
         
         # Importation de l'icone de progresql
         self.img = PhotoImage(file="media/postgresql.png")
@@ -227,161 +237,174 @@ class PyData:
         if path_filename:
             # self.test['text'] = path_filename
             self.path_import = path_filename
-
-            def preview_data(self, path):
             
-                """
-                Cette sous fonction de la fonction Load_data_file() permet d'imorter les données et d'ouvrir une petite fenetre afin de prévisualiser les 5 premières lignes et enfin les données sont ok elle permet d'importer toutes les données
-                """
-                
-                global df
+            
+            def Load_excel_data_1(path):
+                """Si le fichier sélectionné est valide, cela chargera le fichier"""
 
-                self.preview = tk.Toplevel(self.root)
-                self.preview.grab_set()
-                self.preview.title("Previous Data")
-                self.preview.iconbitmap('media/logo.ico')
-                self.preview.geometry("600x250+15+15")
-                self.preview.resizable(width=False, height=False)
-                            
+                try:
+                    excel_filename = r"{}".format(path)
+                    if excel_filename[-4:] == ".csv":
+                        df1 = pd.read_csv(excel_filename)
+                        df1.reset_index(inplace=True)
+                        df1 = df1.rename(columns = {'index':'Id'})
 
-                def ok_data_V():
-                    
-                    """Cette fonction valide les données et affiche toutes les données. Elle est relier au bouton ok pour valider"""
-                    
-                    # df = pd.read_excel(self.path_import)
+                    elif excel_filename[-4:] == ".txt":
+                        df1 = pd.read_table(excel_filename)
+                        df1.reset_index(inplace=True)
+                        df1 = df1.rename(columns = {'index':'Id'})
+                        
+                    else:
+                        # if sheet == "":
+                        df1 = pd.read_excel(excel_filename)
+                        df1.reset_index(inplace=True)
+                        df1 = df1.rename(columns = {'index':'Id'})
 
-                    clear_data_Table_Listbox()
-                    self.tv_All_Data["column"] = list(df.columns)
-                    self.tv_All_Data["show"] = "headings"
+                        # else:
+                        #     df1 = pd.read_excel(
+                        #         excel_filename, sheet_name=sheet)
 
-                    for column in self.tv_All_Data["columns"]:
-                        self.tv_All_Data.column(column, anchor='center')
-                        self.tv_All_Data.heading(column, text=column)
-
-                    df_rows = df.to_numpy().tolist()
-                    for row in df_rows:
-                        self.tv_All_Data.insert("", "end", values=row)
-
-                    for id, column in enumerate(df.columns):
-                        self.Lbox.insert(id, column)
-                    
-                    self.switchButtonState()
-
-                    self.preview.destroy()
-                    return df
-
-                frame1 = tk.LabelFrame(self.preview, text=f"{path}")
-                frame1.place(height=180, width=530, rely=0.05, relx=0.05)
-
-                tv1 = ttk.Treeview(frame1)
-                tv1.place(relheight=1, relwidth=1)
-
-                # commande signifie mettre à jour la vue de l'axe y du widget
-                treescrolly = tk.Scrollbar(
-                    frame1, orient="vertical", command=tv1.yview)
-
-                # commande signifie mettre à jour la vue axe x du widget
-                treescrollx = tk.Scrollbar(
-                    frame1, orient="horizontal", command=tv1.xview)
-
-                # affecter les barres de défilement au widget Treeview
-                tv1.configure(xscrollcommand=treescrollx.set,
-                              yscrollcommand=treescrolly.set)
-
-                # faire en sorte que la barre de défilement remplisse l'axe x du widget Treeview
-                treescrollx.pack(side="bottom", fill="x")
-
-                # faire en sorte que la barre de défilement remplisse l'axe y du widget Treeview
-                treescrolly.pack(side="right", fill="y")
-
-                OkBtn_data = tk.Button(self.preview, text="Ok", background='#40A497', activeforeground='white', activebackground='#40A497',
-                                       command=lambda: df == ok_data_V()).place(relx=0.4, rely=0.85, height=30, width=60)
-
-                Cancel_data = tk.Button(self.preview, text="Cancel", background='#CCCCCC',
-                                        command=self.CancelPreviwData).place(relx=0.5, rely=0.85, height=30, width=60)
-
-                def Load_excel_data_1():
-                    """Si le fichier sélectionné est valide, cela chargera le fichier"""
-
-                    try:
-                        excel_filename = r"{}".format(path)
-                        if excel_filename[-4:] == ".csv":
-                            df1 = pd.read_csv(excel_filename)
-                            df1.reset_index(inplace=True)
-                            df1 = df1.rename(columns = {'index':'Id'})
-
-                        elif excel_filename[-4:] == ".txt":
-                            df1 = pd.read_table(excel_filename)
-                            df1.reset_index(inplace=True)
-                            df1 = df1.rename(columns = {'index':'Id'})
-                            
-                        else:
-                            # if sheet == "":
-                            df1 = pd.read_excel(excel_filename)
-                            df1.reset_index(inplace=True)
-                            df1 = df1.rename(columns = {'index':'Id'})
-
-                            # else:
-                            #     df1 = pd.read_excel(
-                            #         excel_filename, sheet_name=sheet)
-
-                    except ValueError:
-                        tk.messagebox.showerror(
-                            "Information", "The file you have chosen is invalid")
-                        return None
-                    except FileNotFoundError:
-                        tk.messagebox.showerror(
-                            "Information", f"No such file as {path}")
-                        return None
-
-                    clear_data()
-                    tv1["column"] = list(df1.columns)
-                    tv1["show"] = "headings"
-                    for column in tv1["columns"]:
-                        tv1.column(column, anchor='center')
-                        tv1.heading(column, text=column)
-
-                    df_rows = df1.head().to_numpy().tolist()
-                    for row in df_rows:
-                        tv1.insert("", "end", values=row)
-
-                    return df1
-
-                def clear_data():
-                    tv1.delete(*tv1.get_children())
+                except ValueError:
+                    tk.messagebox.showerror(
+                        "Information", "The file you have chosen is invalid")
                     return None
+                except FileNotFoundError:
+                    tk.messagebox.showerror(
+                        "Information", f"No such file as {path}")
+                    return None
+                return df1
 
-                df = Load_excel_data_1()
-                return df
+                
 
-            self.data_origine = preview_data(self, self.path_import)
+            # df = Load_excel_data_1()
+            self.data_origine = Load_excel_data_1(self.path_import)
             self.data_pre = self.data_origine.copy()
+            self.preview_data(self.path_import, self.data_pre)
+        
             
+            
+        else:
+            tk.messagebox.showerror(
+                "Information", "You did not choose a file")
 
-            def clear_data_Table_Listbox():
+    def preview_data(self, path, df):
+    
+        """
+        Cette sous fonction de la fonction Load_data_file() permet d'imorter les données et d'ouvrir une petite fenetre afin de prévisualiser les 5 premières lignes et enfin les données sont ok elle permet d'importer toutes les données
+        """
+        
+        # global df
+
+        self.preview = tk.Toplevel(self.root)
+        self.preview.grab_set()
+        self.preview.title("Previous Data")
+        self.preview.iconbitmap('media/logo.ico')
+        self.preview.geometry("600x250+15+15")
+        self.preview.resizable(width=False, height=False)
+        
+        def clear_data():
+                tv1.delete(*tv1.get_children())
+                return None
+            
+        def clear_data_Table_Listbox():
                 self.tv_All_Data.delete(*self.tv_All_Data.get_children())
                 self.Lbox.delete(0, 'end')
                 # self.Lbox.delete()
                 return None
-        else:
-            tk.messagebox.showerror(
-                "Information", "You did not choose a file")
+                    
+
+        def ok_data_V():
+            
+            """Cette fonction valide les données et affiche toutes les données. Elle est relier au bouton ok pour valider"""
+            
+            # df = pd.read_excel(self.path_import)
+            
+            
+
+            clear_data_Table_Listbox()
+            self.tv_All_Data["column"] = list(df.columns)
+            self.tv_All_Data["show"] = "headings"
+
+            for column in self.tv_All_Data["columns"]:
+                self.tv_All_Data.column(column, anchor='center')
+                self.tv_All_Data.heading(column, text=column)
+
+            df_rows = df.to_numpy().tolist()
+            for row in df_rows:
+                self.tv_All_Data.insert("", "end", values=row)
+
+            for id, column in enumerate(df.columns):
+                self.Lbox.insert(id, column)
+            
+            self.switchButtonState()
+
+            self.preview.destroy()
+            return df
+
+        frame1 = tk.LabelFrame(self.preview, text=f"{path}")
+        frame1.place(height=180, width=530, rely=0.05, relx=0.05)
+
+        tv1 = ttk.Treeview(frame1)
+        tv1.place(relheight=1, relwidth=1)
+
+        # commande signifie mettre à jour la vue de l'axe y du widget
+        treescrolly = tk.Scrollbar(
+            frame1, orient="vertical", command=tv1.yview)
+
+        # commande signifie mettre à jour la vue axe x du widget
+        treescrollx = tk.Scrollbar(
+            frame1, orient="horizontal", command=tv1.xview)
+
+        # affecter les barres de défilement au widget Treeview
+        tv1.configure(xscrollcommand=treescrollx.set,
+                        yscrollcommand=treescrolly.set)
+
+        # faire en sorte que la barre de défilement remplisse l'axe x du widget Treeview
+        treescrollx.pack(side="bottom", fill="x")
+
+        # faire en sorte que la barre de défilement remplisse l'axe y du widget Treeview
+        treescrolly.pack(side="right", fill="y")
+
+        OkBtn_data = tk.Button(self.preview, text="Ok", background='#40A497', activeforeground='white', activebackground='#40A497',
+                                command=lambda: df == ok_data_V()).place(relx=0.4, rely=0.85, height=30, width=60)
+
+        Cancel_data = tk.Button(self.preview, text="Cancel", background='#CCCCCC',
+                                command=self.CancelPreviwData).place(relx=0.5, rely=0.85, height=30, width=60)
+        
+        clear_data()
+        tv1["column"] = list(df.columns)
+        tv1["show"] = "headings"
+        for column in tv1["columns"]:
+            tv1.column(column, anchor='center')
+            tv1.heading(column, text=column)
+
+        df_rows = df.head().to_numpy().tolist()
+        for row in df_rows:
+            tv1.insert("", "end", values=row)
+
+
+        return None
+
     
     def Excel(self):
         self.typefile = "Excel"
         self.Load_data_file()
+        # self.preview_data(self.path_import, self.data_pre)
            
     def CSV(self):
         self.typefile = "CSV"
         self.Load_data_file()
+        # self.preview_data(self.path_import, self.data_pre)
           
     def TXT(self):
         self.typefile = "TXT"
         self.Load_data_file()
+        # self.preview_data(self.path_import, self.data_pre)
 
-    def clear_data_Table(self):
-        self.tv_All_Data.delete(*self.tv_All_Data.get_children())
-
+    def PostgreSQL(self):
+        self.Load_Data_PosgreSQL()
+        # self.preview_data(self.path_import, self.data_pre)
+        
     def CancelPreviwData(self):
         self.data_origine = pd.DataFrame()
         self.data_pre = pd.DataFrame()
@@ -492,7 +515,7 @@ class PyData:
                                 height=70, width=160, bd=1, bg="#DCDCDC", command=self.TXT).place(relx=0.299, rely=0.25)
 
         self.postgrebtn = tk.Button(self.FrameGetData, image=self.postgreIcon, text="Import data from PostgreSQL", compound='top',
-                                    height=70, width=160, bd=1, bg="#DCDCDC", command=self.Load_Data_PosgreSQL).place(relx=0.049, rely=0.37)
+                                    height=70, width=160, bd=1, bg="#DCDCDC", command=self.PostgreSQL).place(relx=0.049, rely=0.37)
 
         self.mysqlbtn = tk.Button(self.FrameGetData, image=self.mysqlIcon, text="Import data from MySQL", compound='top',
                                   height=70, width=160, bd=1, bg="#DCDCDC", command=None).place(relx=0.174, rely=0.37)
@@ -561,6 +584,8 @@ class PyData:
         self.exportBtn = tk.Button(self.FrameHomeTransData, text="Export data", image=self.exportIcon, width=120,
                                    height=50, bg='#DCDCDC', bd=1, compound='top', command=self.ExportData, state='disabled')
         self.exportBtn.place(relx=0.83, rely=0.43)
+        
+        # self.Lbox.bind("<<ListboxSelect>>", print(self.Lbox.get()))
 
         # self.test = tk.Label(self.FrameHomeTransData, text="dfcersgsze")
         # self.test.place(
@@ -617,6 +642,9 @@ class PyData:
         self.data_pre.rename(columns={
             self.data_pre.columns[int(self.dct['id'])]: self.VarEntryRename.get()}, inplace=True)
         
+    def clear_data_Table(self):
+        self.tv_All_Data.delete(*self.tv_All_Data.get_children())
+    
     def DropColumn(self):
         
         global ColSup
