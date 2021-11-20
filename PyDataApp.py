@@ -1,3 +1,4 @@
+# Importer les bibliothèque
 if True:
     import os
     import sqlite3
@@ -16,8 +17,7 @@ if True:
     from datetime import date, datetime
     from openpyxl import load_workbook
     import psycopg2
-    # from main import Api
-
+     
 class PyData:
 
     # param = {'path': ""}
@@ -40,9 +40,7 @@ class PyData:
         self.dct = {
             'id': "", 'name': ""
         }
-        self.requete_sql = ""
-        self.password = ""
-        self.username = ""
+
         
 
         super().__init__()
@@ -58,106 +56,85 @@ class PyData:
     def Load_Data_PosgreSQL(self):
         self.window_postgresql = tk.Toplevel(self.root)
         self.window_postgresql.grab_set()
-        self.window_postgresql.title("Connection PostgreSQL")
+        self.window_postgresql.title("PostgreSQL database")
         self.window_postgresql.iconbitmap('media/logo.ico')
         self.window_postgresql.geometry("500x600+15+15")
-        self.window_postgresql.resizable(width=False, height=False)
-        
-        def window_password_user():
-            """cette fonction permet d'ouvrir une petite fenetre qui permet d'écrire le password et user."""
-            
-            if self.text_sql.get('1.0', 'end-1c') and self.VarEntry_port.get() and self.VarEntry_dbname.get:
-            
-                password_user = tk.Toplevel(self.window_postgresql)
-                password_user.grab_set()
-                password_user.title("Previous Data")
-                password_user.iconbitmap('media/logo.ico')
-                password_user.geometry("250x200")
-                password_user.resizable(width=False, height=False)
-                
-                def Cancel_widow_password_user():
-                    password_user.destroy()
-                
-                
-                def Requete_SQL():
-                    
-                    if self.text_sql.get('1.0', 'end-1c'):
-                
-                        self.password = VarEntryUser.get()
-                        self.username = VarEntrypassword.get()
-                        
-                        self.requete_sql = self.text_sql.get('1.0', 'end-1c')
-                        connexion = psycopg2.connect(dbname=f"{self.VarEntry_dbname.get()}", user=f"{VarEntryUser.get()}", password=f"{VarEntrypassword.get()}", port=f"{self.VarEntry_port.get()}")
-                        cur = connexion.cursor()
-                        cur.execute(f"{self.text_sql.get('1.0', 'end-1c')}")
-                        row = cur.fetchall()
-
-                        df = pd.DataFrame(row, 
-                                        columns=['pays', 'population', 'date', 'nb_cas', 'nb_mort', 'nb_gueri', 'nb_teste', 'nb_rea'] )
-                        # print(df.head())
-                        
-                        self.data_origine = df
-                        self.data_pre = self.data_origine.copy()
-                        
-                        self.path_import = f"Table data {self.VarEntry_dbname.get()} from the PostgreSQL database "
-                        
-                        self.preview_data(self.path_import, self.data_pre)
-                        
-                        password_user.destroy()  
-                        self.window_postgresql.destroy()
-                    
-                    
-                lbl_user = tk.Label(password_user, text="User Name", font=("Helvetica", 9)).place(relx=0.1, rely=0.1)
-                VarEntryUser = tk.StringVar()
-                VarEntryUser.set("enterprisedb")
-                EntryUser = tk.Entry(password_user, textvariable=VarEntryUser, width=30).place(relx=0.1, rely=0.2)
-                
-                lbl_password = tk.Label(password_user, text="Password", font=("Helvetica", 9)).place(relx=0.1, rely=0.35)
-                VarEntrypassword = tk.StringVar()
-                VarEntrypassword.set("charco97")
-                Entrypassword = tk.Entry(password_user, textvariable=VarEntrypassword, width=30, show="*").place(relx=0.1, rely=0.45)
-                
-                OkAuthentication = tk.Button(password_user, text="OK", command=Requete_SQL, width=10)
-                OkAuthentication.place(relx=0.18, rely=0.8)
-                CancelAuthentication = tk.Button(password_user, text="Cancel", command=Cancel_widow_password_user, width=10)
-                CancelAuthentication.place(relx=0.52, rely=0.8)
-                
-            else:
-                tk.messagebox.showerror(
-            "Information", "Please the SQL query")    
+        self.window_postgresql.resizable(width=False, height=False)   
                      
             
         def Cancel_widow_prosgresql():
             self.window_postgresql.destroy()
         
+        def Requete_SQL():
+                    
+            if self.text_sql.get('1.0', 'end-1c') and self.VarEntry_port.get() and self.VarEntry_dbname.get and self.VarEntryUser.get() and self.VarEntrypassword.get():
+                try:
+                    
+                    connexion = psycopg2.connect(dbname=f"{self.VarEntry_dbname.get()}", user=f"{self.VarEntryUser.get()}", password=f"{self.VarEntrypassword.get()}", port=f"{self.VarEntry_port.get()}")
+                    cur = connexion.cursor()
+                    cur.execute(f"{self.text_sql.get('1.0', 'end-1c')}")
+                    row = cur.fetchall()
+
+                    df = pd.DataFrame(row, 
+                                    columns=['pays', 'population', 'date', 'nb_cas', 'nb_mort', 'nb_gueri', 'nb_teste', 'nb_rea'] )
+                    df.reset_index(inplace=True)
+                    df = df.rename(columns = {'index':'Id'})
+                    
+                    self.data_origine = df
+                    self.data_pre = self.data_origine.copy()
+                    
+                    self.path_import = f"Table data {self.VarEntry_dbname.get()} from the PostgreSQL database "
+                    
+                    self.preview_data(self.path_import, self.data_pre)
+                    self.window_postgresql.destroy()
+                except:
+                        tk.messagebox.showerror(
+                            "Information", "Echec connexion !")
+            else:
+                tk.messagebox.showerror(
+            "Information", "some fields are not filled") 
+                        
+        
         # Importation de l'icone de progresql
         self.img = PhotoImage(file="media/postgresql.png")
-        self.img = self.img.subsample(20, 20)
+        self.img = self.img.subsample(35, 35)
         
         # afficher l'icone de progresql
-        self.print_img = tk.Label(self.window_postgresql, image=self.img, width=140, height=140)
+        self.print_img = tk.Label(self.window_postgresql, image=self.img, width=90, height=90)
         self.print_img.place(relx=0.01, rely=0.01)
         
         #  label de titre progresql
-        self.lbl_title = tk.Label(self.window_postgresql, text="PostgreSQL database", font=("Helvetica", 20))
-        self.lbl_title.place(relx=0.35, rely=0.07)
+        self.lbl_title = tk.Label(self.window_postgresql, text="PostgreSQL database", font=("Helvetica", 16))
+        self.lbl_title.place(relx=0.25, rely=0.05)
         
         # label de Database
-        self.lbl_dbname = tk.Label(self.window_postgresql, text="Database", font=("Helvetica", 12)).place(relx=0.07, rely=0.3)
+        self.lbl_dbname = tk.Label(self.window_postgresql, text="Database", font=("Helvetica", 10)).place(relx=0.07, rely=0.2)
         # Entry de Database
         self.VarEntry_dbname = tk.StringVar()
         self.VarEntry_dbname.set("covid")
         self.Entry_dbname = tk.Entry(self.window_postgresql, textvariable=self.VarEntry_dbname, width=40)
-        self.Entry_dbname.place(relx=0.28, rely=0.3)
+        self.Entry_dbname.place(relx=0.28, rely=0.2)
 
         # label de Port
-        self.lbl_port = tk.Label(self.window_postgresql, text="Port", font=("Helvetica", 12)).place(relx=0.07, rely=0.35)
+        self.lbl_port = tk.Label(self.window_postgresql, text="Port", font=("Helvetica", 10)).place(relx=0.07, rely=0.25)
         # Entry de Port
         self.VarEntry_port = tk.StringVar()
         self.VarEntry_port.set("5444")
         self.Entry_port = tk.Entry(self.window_postgresql, textvariable=self.VarEntry_port, width=40)
-        self.Entry_port.place(relx=0.28, rely=0.35)
+        self.Entry_port.place(relx=0.28, rely=0.25)
         
+        #Username
+        self.lbl_user = tk.Label(self.window_postgresql, text="User Name", font=("Helvetica", 10)).place(relx=0.07, rely=0.3)
+        self.VarEntryUser = tk.StringVar()
+        self.VarEntryUser.set("enterprisedb")
+        self.EntryUser = tk.Entry(self.window_postgresql, textvariable=self.VarEntryUser, width=40).place(relx=0.28, rely=0.3)
+        
+        # password
+        self.lbl_password = tk.Label(self.window_postgresql, text="Password", font=("Helvetica", 9)).place(relx=0.07, rely=0.35)
+        self.VarEntrypassword = tk.StringVar()
+        self.VarEntrypassword.set("charco97")
+        self.Entrypassword = tk.Entry(self.window_postgresql, textvariable=self.VarEntrypassword, width=30, show="*").place(relx=0.28, rely=0.35)
+
         # label Text Widget pour ecrire su sql
         self.lbl_sql = tk.Label(self.window_postgresql, text="Please write your SQL query", font=("Helvetica", 12)).place(relx=0.1, rely=0.44)
         # Text Widget pour ecrire su sql
@@ -165,7 +142,7 @@ class PyData:
         self.text_sql.place(relx=0.1, rely=0.48, relwidth=0.8, relheight=0.35)
         
             
-        self.OkPogreSQL = tk.Button(self.window_postgresql, text="OK", width=10, command=window_password_user)
+        self.OkPogreSQL = tk.Button(self.window_postgresql, text="OK", width=10, command=Requete_SQL)
         self.OkPogreSQL.place(relx=0.33, rely=0.9)
         
         self.CacelPogreSQL = tk.Button(self.window_postgresql, text="Cancel", width=10, command=Cancel_widow_prosgresql)
@@ -245,20 +222,20 @@ class PyData:
                 try:
                     excel_filename = r"{}".format(path)
                     if excel_filename[-4:] == ".csv":
-                        df1 = pd.read_csv(excel_filename)
-                        df1.reset_index(inplace=True)
-                        df1 = df1.rename(columns = {'index':'Id'})
+                        df = pd.read_csv(excel_filename)
+                        df.reset_index(inplace=True)
+                        df = df.rename(columns = {'index':'Id'})
 
                     elif excel_filename[-4:] == ".txt":
-                        df1 = pd.read_table(excel_filename)
-                        df1.reset_index(inplace=True)
-                        df1 = df1.rename(columns = {'index':'Id'})
+                        df = pd.read_table(excel_filename)
+                        df.reset_index(inplace=True)
+                        df = df.rename(columns = {'index':'Id'})
                         
                     else:
                         # if sheet == "":
-                        df1 = pd.read_excel(excel_filename)
-                        df1.reset_index(inplace=True)
-                        df1 = df1.rename(columns = {'index':'Id'})
+                        df = pd.read_excel(excel_filename)
+                        df.reset_index(inplace=True)
+                        df = df.rename(columns = {'index':'Id'})
 
                         # else:
                         #     df1 = pd.read_excel(
@@ -272,7 +249,7 @@ class PyData:
                     tk.messagebox.showerror(
                         "Information", f"No such file as {path}")
                     return None
-                return df1
+                return df
 
                 
 
@@ -762,6 +739,6 @@ class PyData:
         
             
         ExportGUI(self)
-    
-app = PyData()
-app.root.mainloop()
+  
+
+
