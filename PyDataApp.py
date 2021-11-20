@@ -746,9 +746,6 @@ class PyData:
         )
         self.exportBtn.place(relx=0.83, rely=0.43)
 
-        def r(event):
-            print("hhh")
-
         self.Lbox.bind("<Double-Button-1>", self.Def_edit_name_col_in_entry)
 
         # self.test = tk.Label(self.FrameHomeTransData, text="dfcersgsze")
