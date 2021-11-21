@@ -201,17 +201,27 @@ class PyData:
         self.text_sql.place(relx=0.1, rely=0.52, relwidth=0.8, relheight=0.35)
 
         self.OkPogreSQL = tk.Button(
-            self.window_postgresql, text="OK", width=10, command=Requete_SQL
+            self.window_postgresql,
+            text="OK",
+            background="#6DA3F4",
+            activebackground="#0256CD",
+            foreground="white",
+            activeforeground="white",
+            width=12,
+            height=1,
+            command=Requete_SQL,
         )
-        self.OkPogreSQL.place(relx=0.33, rely=0.9)
+        self.OkPogreSQL.place(relx=0.31, rely=0.9)
 
         self.CacelPogreSQL = tk.Button(
             self.window_postgresql,
             text="Cancel",
-            width=10,
+            background="#CCCCCC",
+            width=12,
+            height=1,
             command=Cancel_widow_prosgresql,
         )
-        self.CacelPogreSQL.place(relx=0.53, rely=0.9)
+        self.CacelPogreSQL.place(relx=0.50, rely=0.9)
         # pass
 
     def switchButtonState(self):
@@ -375,9 +385,11 @@ class PyData:
             df_rows = df.to_numpy().tolist()
             for row in df_rows:
                 self.tv_All_Data.insert("", "end", values=row)
+            self.tv_All_Data.insert("", "end", values="")
 
             for id, column in enumerate(df.columns):
-                self.Lbox.insert(id, column)
+                col_typ = f"{column}  : {np.dtype(df[column])}"
+                self.Lbox.insert(id, col_typ)
 
             self.switchButtonState()
 
@@ -407,19 +419,28 @@ class PyData:
 
         OkBtn_data = tk.Button(
             self.preview,
-            text="Ok",
-            background="#40A497",
+            # text="Ok",
+            # background="#40A497",
+            # activeforeground="white",
+            # activebackground="#40A497",
+            text="OK",
+            background="#6DA3F4",
+            activebackground="#0256CD",
+            foreground="white",
             activeforeground="white",
-            activebackground="#40A497",
+            width=12,
+            height=1,
             command=lambda: df == ok_data_V(),
-        ).place(relx=0.4, rely=0.85, height=30, width=60)
+        ).place(relx=0.32, rely=0.85)
 
         Cancel_data = tk.Button(
             self.preview,
             text="Cancel",
             background="#CCCCCC",
+            width=12,
+            height=1,
             command=self.CancelPreviwData,
-        ).place(relx=0.5, rely=0.85, height=30, width=60)
+        ).place(relx=0.48, rely=0.85)
 
         clear_data()
         tv1["column"] = list(df.columns)
@@ -789,25 +810,29 @@ class PyData:
             # self.VarEntryRename.set(i)
 
             self.VarEntryRename.set("")
-            self.VarEntryRename.set(self.Lbox.get(i))
+            col_typ = self.Lbox.get(i).split("  : ")[0]
+            self.VarEntryRename.set(col_typ)
             self.dct["id"] = i
-            self.dct["name"] = self.Lbox.get(i)
+            self.dct["name"] = col_typ
 
     def RenameColumnTable(self):
-        # renommer dans le treeview
-        # print(self.tv_All_Data.column(int(self.dct['id'])))
-        self.tv_All_Data.heading(int(self.dct["id"]), text=self.VarEntryRename.get())
-        # renommer dans la listbox
-        for item in self.Lbox.curselection():
-            self.Lbox.delete(item)
-            self.Lbox.insert(int(self.dct["id"]), self.VarEntryRename.get())
-        # renommer dans le données
+
         self.data_pre.rename(
             columns={
                 self.data_pre.columns[int(self.dct["id"])]: self.VarEntryRename.get()
             },
             inplace=True,
         )
+
+        # renommer dans le treeview
+        # print(self.tv_All_Data.column(int(self.dct['id'])))
+        self.tv_All_Data.heading(int(self.dct["id"]), text=self.VarEntryRename.get())
+        # renommer dans la listbox
+        for item in self.Lbox.curselection():
+            self.Lbox.delete(item)
+            col_typ = f"{self.VarEntryRename.get()}  : {np.dtype(self.data_pre[self.VarEntryRename.get()])}"
+            self.Lbox.insert(int(self.dct["id"]), col_typ)
+        # renommer dans le données
 
     def clear_data_Table(self):
         self.tv_All_Data.delete(*self.tv_All_Data.get_children())
@@ -816,7 +841,7 @@ class PyData:
 
         global ColSup
         for i in self.Lbox.curselection():
-            ColSup = self.Lbox.get(i)
+            ColSup = self.Lbox.get(i).split("  : ")[0]
             self.Lbox.delete(i)
 
         # supprimer la colonne dans le données
@@ -835,6 +860,7 @@ class PyData:
         df_rows = self.data_pre.to_numpy().tolist()
         for row in df_rows:
             self.tv_All_Data.insert("", "end", values=row)
+        self.tv_All_Data.insert("", "end", values="")
 
     def ExportData(self):
         def ExportGUI(self):
@@ -964,7 +990,7 @@ class PyData:
                 width=12,
                 height=1,
                 command=OkExport,
-            ).place(relx=0.3, rely=0.8)
+            ).place(relx=0.31, rely=0.8)
 
             self.CancelExportBtn = tk.Button(
                 self.Exportation,
@@ -973,6 +999,6 @@ class PyData:
                 width=12,
                 height=1,
                 command=CancelExport,
-            ).place(relx=0.5, rely=0.8)
+            ).place(relx=0.50, rely=0.8)
 
         ExportGUI(self)
