@@ -371,24 +371,44 @@ class PyData:
         def ok_data_V():
 
             """Cette fonction valide les données et affiche toutes les données. Elle est relier au bouton ok pour valider"""
+            global count
+            count = 0
 
-            # df = pd.read_excel(self.path_import)
+            self.tv_All_Data.tag_configure("oddrow", background="white")
+            self.tv_All_Data.tag_configure("evenrow", background="#D3D3D3")
 
             clear_data_Table_Listbox()
             self.tv_All_Data["column"] = list(df.columns)
             self.tv_All_Data["show"] = "headings"
 
             for column in self.tv_All_Data["columns"]:
-                self.tv_All_Data.column(column, anchor="center")
-                self.tv_All_Data.heading(column, text=column)
+                self.tv_All_Data.column(column, anchor="w")
+                self.tv_All_Data.heading(column, anchor="w", text=column)
 
             df_rows = df.to_numpy().tolist()
             for row in df_rows:
-                self.tv_All_Data.insert("", "end", values=row)
+                if count % 2 == 0:
+                    self.tv_All_Data.insert(
+                        "",
+                        "end",
+                        iid=count,
+                        values=row,
+                        tags=("evenrow",),
+                    )
+                else:
+                    self.tv_All_Data.insert(
+                        "",
+                        "end",
+                        iid=count,
+                        values=row,
+                        tags=("oddrow",),
+                    )
+                count += 1
+
             self.tv_All_Data.insert("", "end", values="")
 
             for id, column in enumerate(df.columns):
-                col_typ = f"{column}  : {np.dtype(df[column])}"
+                col_typ = f" {column}  : {np.dtype(df[column])}"
                 self.Lbox.insert(id, col_typ)
 
             self.switchButtonState()
@@ -674,7 +694,9 @@ class PyData:
 
         self.VarEntryRename = tk.StringVar()
         self.Entry_RenameColumn = tk.Entry(
-            self.FrameHomeTransData, textvariable=self.VarEntryRename
+            self.FrameHomeTransData,
+            textvariable=self.VarEntryRename,
+            font=("Helvetica", 10),
         ).place(relx=0.72, rely=0.23, relheight=0.03, relwidth=0.17)
 
         self.RomeveCol = tk.Button(
@@ -699,7 +721,7 @@ class PyData:
         )
         self.AddCol.place(relx=0.63, rely=0.32, relheight=0.05, relwidth=0.08)
 
-        self.Lbox = tk.Listbox(self.FrameHomeTransData, bg="#DCDCDC")
+        self.Lbox = tk.Listbox(self.FrameHomeTransData, bg="#F5F5F5")
         self.Lbox.place(relx=0.46, rely=0.18, relheight=0.33, relwidth=0.15)
 
         self.treescrolly = tk.Scrollbar(self.Lbox, orient="vertical")
@@ -767,7 +789,7 @@ class PyData:
         )
         self.exportBtn.place(relx=0.83, rely=0.43)
 
-        self.Lbox.bind("<Double-Button-1>", self.Def_edit_name_col_in_entry)
+        self.Lbox.bind("<<ListboxSelect>>", self.Def_edit_name_col_in_entry)
 
         # self.test = tk.Label(self.FrameHomeTransData, text="dfcersgsze")
         # self.test.place(
@@ -779,6 +801,68 @@ class PyData:
             self.root, text="Data", background="#FAEBD7"
         )
         self.FrameTableData.place(relx=0.035, rely=0.54, relheight=0.44, relwidth=0.92)
+
+        # Add Some Style
+        style = ttk.Style()
+
+        # Pick A Theme
+        style.theme_use("clam")
+
+        # Configure the Treeview Colors
+        style.configure(
+            "Treeview.Heading",
+            background="lightblue",
+            foreground="black",
+            rowheight=25,
+            fieldbackground="white",
+        )
+        # style.theme_use("clam")
+        # style.configure(
+        #     "Treeview.Heading", background="lightblue", foreground="black"
+        # )
+
+        # Change Selected Color
+        style.map("Treeview", background=[("selected", "#347083")])
+
+        # label de rechercher
+        self.label_Fx = tk.Label(
+            self.FrameTableData, text="fx", font=("Helvetica", 10), background="#FAEBD7"
+        ).place(relx=0.05, rely=0.007)
+
+        # entry : bar de formule
+        self.VarEntryFx = tk.StringVar()
+        self.entry_Fx = tk.Entry(
+            self.FrameTableData, textvariable=self.VarEntryFx, width=100
+        )
+        self.entry_Fx.place(relx=0.07, rely=0.01)
+
+        # liste déroulente pour selectionner une colonne
+        self.listderoulente_column = ttk.Combobox(self.FrameTableData)
+        self.listderoulente_column.place(relx=0.6, rely=0)
+
+        # button rechercher ou executer la formule
+        self.button_executor_fx = tk.Button(
+            self.FrameTableData,
+            background="#DCDCDC",
+            activebackground="#004C8C",
+            activeforeground="white",
+            text="Search",
+            width=13,
+            command=None,
+        )
+        self.button_executor_fx.place(relx=0.83, rely=0)
+
+        # button appliquer la formule aux données
+        self.button_apply_fx = tk.Button(
+            self.FrameTableData,
+            background="#DCDCDC",
+            activebackground="#004C8C",
+            activeforeground="white",
+            text="Apply",
+            width=13,
+            command=None,
+        )
+        self.button_apply_fx.place(relx=0.91, rely=0)
 
         self.tv_All_Data = ttk.Treeview(self.FrameTableData)
         self.tv_All_Data.place(relx=0, rely=0.1, relheight=0.9, relwidth=1)
@@ -810,7 +894,7 @@ class PyData:
             # self.VarEntryRename.set(i)
 
             self.VarEntryRename.set("")
-            col_typ = self.Lbox.get(i).split("  : ")[0]
+            col_typ = self.Lbox.get(i).split("  : ")[0].strip()
             self.VarEntryRename.set(col_typ)
             self.dct["id"] = i
             self.dct["name"] = col_typ
@@ -830,7 +914,7 @@ class PyData:
         # renommer dans la listbox
         for item in self.Lbox.curselection():
             self.Lbox.delete(item)
-            col_typ = f"{self.VarEntryRename.get()}  : {np.dtype(self.data_pre[self.VarEntryRename.get()])}"
+            col_typ = f" {self.VarEntryRename.get()}  : {np.dtype(self.data_pre[self.VarEntryRename.get()])}"
             self.Lbox.insert(int(self.dct["id"]), col_typ)
         # renommer dans le données
 
@@ -840,13 +924,18 @@ class PyData:
     def DropColumn(self):
 
         global ColSup
+        nb = 0
+
         for i in self.Lbox.curselection():
-            ColSup = self.Lbox.get(i).split("  : ")[0]
+            ColSup = self.Lbox.get(i).split("  : ")[0].strip()
             self.Lbox.delete(i)
 
         # supprimer la colonne dans le données
         self.data_pre.drop(ColSup, axis=1, inplace=True)
         # print(data.head(3))
+
+        self.tv_All_Data.tag_configure("oddrow", background="white")
+        self.tv_All_Data.tag_configure("evenrow", background="#D3D3D3")
 
         # supprimer dans le treeview
         self.clear_data_Table()
@@ -859,7 +948,23 @@ class PyData:
 
         df_rows = self.data_pre.to_numpy().tolist()
         for row in df_rows:
-            self.tv_All_Data.insert("", "end", values=row)
+            if nb % 2 == 0:
+                self.tv_All_Data.insert(
+                    "",
+                    "end",
+                    iid=nb,
+                    values=row,
+                    tags=("evenrow",),
+                )
+            else:
+                self.tv_All_Data.insert(
+                    "",
+                    "end",
+                    iid=nb,
+                    values=row,
+                    tags=("oddrow",),
+                )
+            nb += 1
         self.tv_All_Data.insert("", "end", values="")
 
     def ExportData(self):
@@ -886,55 +991,58 @@ class PyData:
                 self.Exportation.destroy()
 
             def OkExport():
-                if self.VarEntry_path_export.get():
-                    if self.VarEntry_name_file.get():
+                try:
+                    if self.VarEntry_path_export.get():
+                        if self.VarEntry_name_file.get():
 
-                        self.path_export = (
-                            self.VarEntry_path_export.get()
-                            + "/"
-                            + self.VarEntry_name_file.get()
-                        )
-                        try:
-                            if self.VarRadioInt.get():
-                                try:
-                                    self.data_pre.to_excel(
-                                        f"{self.VarEntry_path_export.get()}/{self.VarEntry_name_file.get()}.xlsx",
-                                        index=False,
-                                    )
-
-                                    self.Exportation.destroy()
-                                except NameError or TypeError or FileNotFoundError:
-                                    tk.messagebox.showerror(
-                                        "Information", "There is no data to export"
-                                    )
-                            else:
-                                try:
-                                    self.data_pre.to_csv(
-                                        f"{self.VarEntry_path_export.get()}/{self.VarEntry_name_file.get()}.csv",
-                                        index=False,
-                                    )
-
-                                    self.Exportation.destroy()
-                                except NameError or TypeError or FileNotFoundError:
-                                    tk.messagebox.showerror(
-                                        "Information", "There is no data to export"
-                                    )
-                        except ValueError & FileNotFoundError:
-                            tk.messagebox.showerror(
-                                "Information", "incorrect destination path"
+                            self.path_export = (
+                                self.VarEntry_path_export.get()
+                                + "/"
+                                + self.VarEntry_name_file.get()
                             )
+                            try:
+                                if self.VarRadioInt.get():
+                                    try:
+                                        self.data_pre.to_excel(
+                                            f"{self.VarEntry_path_export.get()}/{self.VarEntry_name_file.get()}.xlsx",
+                                            index=False,
+                                        )
 
-                        # except FileNotFoundError:
-                        #     tk.messagebox.showerror(
-                        #         "Information", f"No such file as {self.path_export}.xlsx")
+                                        self.Exportation.destroy()
+                                    except NameError or TypeError or FileNotFoundError:
+                                        tk.messagebox.showerror(
+                                            "Information", "There is no data to export"
+                                        )
+                                else:
+                                    try:
+                                        self.data_pre.to_csv(
+                                            f"{self.VarEntry_path_export.get()}/{self.VarEntry_name_file.get()}.csv",
+                                            index=False,
+                                        )
+
+                                        self.Exportation.destroy()
+                                    except NameError or TypeError or FileNotFoundError:
+                                        tk.messagebox.showerror(
+                                            "Information", "There is no data to export"
+                                        )
+                            except ValueError & FileNotFoundError:
+                                tk.messagebox.showerror(
+                                    "Information", "incorrect destination path"
+                                )
+
+                            # except FileNotFoundError:
+                            #     tk.messagebox.showerror(
+                            #         "Information", f"No such file as {self.path_export}.xlsx")
+                        else:
+                            tk.messagebox.showerror(
+                                "Information", "Please give a name to the file"
+                            )
                     else:
                         tk.messagebox.showerror(
-                            "Information", "Please give a name to the file"
+                            "Information", "Please choose a destination folder"
                         )
-                else:
-                    tk.messagebox.showerror(
-                        "Information", "Please choose a destination folder"
-                    )
+                except:
+                    tk.messagebox.showerror("Information", "incorrect destination path")
 
             self.Exportation = tk.Toplevel(self.root)
             self.Exportation.grab_set()
@@ -1002,3 +1110,5 @@ class PyData:
             ).place(relx=0.50, rely=0.8)
 
         ExportGUI(self)
+
+    # ------------ Fx : formul
