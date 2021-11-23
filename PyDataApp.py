@@ -408,7 +408,7 @@ class PyData:
             self.tv_All_Data.insert("", "end", values="")
 
             for id, column in enumerate(df.columns):
-                col_typ = f" {column}  : {np.dtype(df[column])}"
+                col_typ = f" {column}  : {np.dtype(df[column])}     "
                 self.Lbox.insert(id, col_typ)
 
             self.switchButtonState()
@@ -547,16 +547,16 @@ class PyData:
         self.menu_sub_model.add_command(label="SVM")
 
         # Barre entet
-        self.barheader = tk.Frame(self.root, bd=20, bg="#FFA500", height=60)
+        self.barheader = tk.Frame(self.root, bd=20, bg="#FFA500", height=40)
         self.barheader.pack(side="top", fill="x")
-        # titre
-        self.maintitle = tk.Label(
-            self.barheader,
-            text="Welcome to Power Studio Data Desktop !",
-            font=("Algeria 20"),
-            bg="#FFA500",
-        )
-        self.maintitle.pack(side="bottom", fill="x")
+        # # titre
+        # self.maintitle = tk.Label(
+        #     self.barheader,
+        #     text="Welcome to Power Studio Data Desktop !",
+        #     font=("Algeria 20"),
+        #     bg="#FFA500",
+        # )
+        # self.maintitle.pack(side="bottom", fill="x")
 
         # WidgetFrame = tk.Frame(self.root, bg='white').place(
         #     relx=0.05, rely=0.1)
@@ -565,15 +565,16 @@ class PyData:
 
         self.FrameGetData = tk.LabelFrame(
             self.root, text="Get Data", background="#FAEBD7"
-        ).place(relx=0.035, rely=0.12, relheight=0.4, relwidth=0.4)
+        )
+        self.FrameGetData.place(relx=0.035, rely=0.06, relheight=0.4, relwidth=0.4)
 
         self.title = tk.Label(
             self.FrameGetData,
             text="Once loaded, your data will be displayed below",
             background="#FAEBD7",
             height=3,
-            font=("Algeria", 12),
-        ).place(relx=0.09, rely=0.165)
+            font=("Helvetica", 11),
+        ).place(relx=0.09, rely=0.01)
 
         # charger les icones images
         self.excelIcon = PhotoImage(file="media/excel.png")
@@ -609,7 +610,7 @@ class PyData:
             bd=1,
             bg="#DCDCDC",
             command=self.Excel,
-        ).place(relx=0.049, rely=0.25)
+        ).place(relx=0.025, rely=0.18)
 
         self.csvBtn = tk.Button(
             self.FrameGetData,
@@ -621,7 +622,7 @@ class PyData:
             bd=1,
             bg="#DCDCDC",
             command=self.CSV,
-        ).place(relx=0.174, rely=0.25)
+        ).place(relx=0.35, rely=0.18)
 
         self.txtbtn = tk.Button(
             self.FrameGetData,
@@ -633,7 +634,7 @@ class PyData:
             bd=1,
             bg="#DCDCDC",
             command=self.TXT,
-        ).place(relx=0.299, rely=0.25)
+        ).place(relx=0.675, rely=0.18)
 
         self.postgrebtn = tk.Button(
             self.FrameGetData,
@@ -645,7 +646,7 @@ class PyData:
             bd=1,
             bg="#DCDCDC",
             command=self.PostgreSQL,
-        ).place(relx=0.049, rely=0.37)
+        ).place(relx=0.025, rely=0.48)
 
         self.mysqlbtn = tk.Button(
             self.FrameGetData,
@@ -657,7 +658,7 @@ class PyData:
             bd=1,
             bg="#DCDCDC",
             command=None,
-        ).place(relx=0.174, rely=0.37)
+        ).place(relx=0.35, rely=0.48)
 
         self.mongobtn = tk.Button(
             self.FrameGetData,
@@ -669,17 +670,20 @@ class PyData:
             bd=1,
             bg="#DCDCDC",
             command=None,
-        ).place(relx=0.299, rely=0.37)
+        ).place(relx=0.675, rely=0.48)
 
     def WedgetHome(self):
 
         self.FrameHomeTransData = tk.LabelFrame(
             self.root, text="Data Processing", background="#FAEBD7"
-        ).place(relx=0.45, rely=0.12, relheight=0.4, relwidth=0.505)
+        )
+        self.FrameHomeTransData.place(
+            relx=0.45, rely=0.06, relheight=0.4, relwidth=0.505
+        )
 
         self.LabelCol = tk.Label(
             self.FrameHomeTransData, background="#FAEBD7", text="Columns :"
-        ).place(relx=0.47, rely=0.15)
+        ).place(relx=0.03, rely=0.02)
 
         self.RenameCol = tk.Button(
             self.FrameHomeTransData,
@@ -690,14 +694,14 @@ class PyData:
             command=self.RenameColumnTable,
             state="disabled",
         )
-        self.RenameCol.place(relx=0.63, rely=0.22, relheight=0.05, relwidth=0.08)
+        self.RenameCol.place(relx=0.65, rely=0.2, relheight=0.13, relwidth=0.18)
 
         self.VarEntryRename = tk.StringVar()
         self.Entry_RenameColumn = tk.Entry(
             self.FrameHomeTransData,
             textvariable=self.VarEntryRename,
             font=("Helvetica", 10),
-        ).place(relx=0.72, rely=0.23, relheight=0.03, relwidth=0.17)
+        ).place(relx=0.3, rely=0.2, relheight=0.08, relwidth=0.3)
 
         self.RomeveCol = tk.Button(
             self.FrameHomeTransData,
@@ -708,7 +712,7 @@ class PyData:
             command=self.DropColumn,
             state="disabled",
         )
-        self.RomeveCol.place(relx=0.63, rely=0.27, relheight=0.05, relwidth=0.08)
+        self.RomeveCol.place(relx=0.65, rely=0.34, relheight=0.13, relwidth=0.18)
 
         self.AddCol = tk.Button(
             self.FrameHomeTransData,
@@ -719,10 +723,12 @@ class PyData:
             command=None,
             state="disabled",
         )
-        self.AddCol.place(relx=0.63, rely=0.32, relheight=0.05, relwidth=0.08)
+        self.AddCol.place(relx=0.65, rely=0.48, relheight=0.13, relwidth=0.18)
 
-        self.Lbox = tk.Listbox(self.FrameHomeTransData, bg="#F5F5F5")
-        self.Lbox.place(relx=0.46, rely=0.18, relheight=0.33, relwidth=0.15)
+        self.Lbox = tk.Listbox(
+            self.FrameHomeTransData, bg="#F5F5F5", width=1000, height=1
+        )
+        self.Lbox.place(relx=0.009, rely=0.1, relheight=0.85, relwidth=0.27)
 
         self.treescrolly = tk.Scrollbar(self.Lbox, orient="vertical")
         self.treescrolly.configure(command=self.Lbox.yview)
@@ -739,57 +745,57 @@ class PyData:
         self.treescrolly.pack(side="right", fill="y")
 
         self.transformIcon = PhotoImage(file="media/transform.png")
-        self.transformIcon = self.transformIcon.subsample(30, 30)
+        self.transformIcon = self.transformIcon.subsample(40, 40)
 
         self.saveIcon = PhotoImage(file="media/save.png")
-        self.saveIcon = self.saveIcon.subsample(30, 30)
+        self.saveIcon = self.saveIcon.subsample(40, 40)
 
         self.exportIcon = PhotoImage(file="media/export.png")
-        self.exportIcon = self.exportIcon.subsample(25, 25)
+        self.exportIcon = self.exportIcon.subsample(35, 35)
 
         self.transformBtn = tk.Button(
             self.FrameHomeTransData,
             text="Transform Data",
             image=self.transformIcon,
             width=120,
-            height=50,
+            height=40,
             bg="#DCDCDC",
             bd=1,
             compound="top",
             command=None,
             state="disabled",
         )
-        self.transformBtn.place(relx=0.63, rely=0.43)
+        self.transformBtn.place(relx=0.3, rely=0.8)
 
         self.saveBtn = tk.Button(
             self.FrameHomeTransData,
             text="Save",
             image=self.saveIcon,
             width=120,
-            height=50,
+            height=40,
             bg="#DCDCDC",
             bd=1,
             compound="top",
             command=None,
             state="disabled",
         )
-        self.saveBtn.place(relx=0.73, rely=0.43)
+        self.saveBtn.place(relx=0.5, rely=0.8)
 
         self.exportBtn = tk.Button(
             self.FrameHomeTransData,
             text="Export data",
             image=self.exportIcon,
             width=120,
-            height=50,
+            height=40,
             bg="#DCDCDC",
             bd=1,
             compound="top",
             command=self.ExportData,
             state="disabled",
         )
-        self.exportBtn.place(relx=0.83, rely=0.43)
+        self.exportBtn.place(relx=0.7, rely=0.8)
 
-        self.Lbox.bind("<<ListboxSelect>>", self.Def_edit_name_col_in_entry)
+        self.Lbox.bind("<Double-Button-1>", self.Def_edit_name_col_in_entry)
 
         # self.test = tk.Label(self.FrameHomeTransData, text="dfcersgsze")
         # self.test.place(
@@ -800,7 +806,7 @@ class PyData:
         self.FrameTableData = tk.LabelFrame(
             self.root, text="Data", background="#FAEBD7"
         )
-        self.FrameTableData.place(relx=0.035, rely=0.54, relheight=0.44, relwidth=0.92)
+        self.FrameTableData.place(relx=0.035, rely=0.47, relheight=0.5, relwidth=0.92)
 
         # Add Some Style
         style = ttk.Style()
@@ -865,7 +871,7 @@ class PyData:
         self.button_apply_fx.place(relx=0.91, rely=0)
 
         self.tv_All_Data = ttk.Treeview(self.FrameTableData)
-        self.tv_All_Data.place(relx=0, rely=0.1, relheight=0.9, relwidth=1)
+        self.tv_All_Data.place(relx=0, rely=0.1, relheight=0.75, relwidth=1)
 
         # commande signifie mettre à jour la vue de l'axe y du widget
         treescrolly = tk.Scrollbar(
@@ -914,7 +920,7 @@ class PyData:
         # renommer dans la listbox
         for item in self.Lbox.curselection():
             self.Lbox.delete(item)
-            col_typ = f" {self.VarEntryRename.get()}  : {np.dtype(self.data_pre[self.VarEntryRename.get()])}"
+            col_typ = f" {self.VarEntryRename.get()}  : {np.dtype(self.data_pre[self.VarEntryRename.get()])}     "
             self.Lbox.insert(int(self.dct["id"]), col_typ)
         # renommer dans le données
 
