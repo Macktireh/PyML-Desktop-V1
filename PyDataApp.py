@@ -866,7 +866,7 @@ class PyData:
             activeforeground="white",
             text="Apply",
             width=13,
-            command=None,
+            command=self.cc,
         )
         self.button_apply_fx.place(relx=0.91, rely=0)
 
@@ -893,6 +893,52 @@ class PyData:
 
         # faire en sorte que la barre de défilement remplisse l'axe y du widget Treeview
         treescrolly.pack(side="right", fill="y")
+
+        self.tv_All_Data.bind("<Double-Button-1>", self.cc)
+
+    def cc(self, event):
+        self.wi = tk.Toplevel(self.root)
+        self.wi.grab_set()
+        self.wi.geometry("300x300")
+        self.container = ttk.Frame(self.wi)
+        self.canvas = tk.Canvas(self.container, width=800, height=35)
+        self.scrollbar = ttk.Scrollbar(
+            self.container, orient="horizontal", command=self.canvas.xview
+        )
+        self.scrollable_frame = ttk.Frame(self.canvas)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")),
+        )
+
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+        self.canvas.configure(xscrollcommand=self.scrollbar.set)
+        cols = self.data_pre.columns
+
+        selected = self.tv_All_Data.focus()
+        values = self.tv_All_Data.item(selected, "values")
+
+        i = 1
+        label = []
+        entry = []
+        for j, col in enumerate(cols):
+            label.append(ttk.Label(self.scrollable_frame, text=col))
+            label[-1].pack(side="left")
+            # vr = tk.StringVar()
+            # vr.set(f"{i}")
+            entry.append(tk.Entry(self.scrollable_frame))
+            entry[-1].delete(0, "end")
+            entry[-1].insert(0, values[j])
+            entry[-1].pack(side="left")
+
+            tk.Label(self.scrollable_frame, text="  ").pack(side="left", pady=5)
+            i += 1
+
+        self.container.pack(side="bottom", fill="x")
+        self.canvas.pack(fill="x")
+        self.scrollbar.pack(fill="x")
 
     def Def_edit_name_col_in_entry(self, event):
         for i in self.Lbox.curselection():
