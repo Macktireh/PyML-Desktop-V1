@@ -149,7 +149,7 @@ class PyData:
         ).place(relx=0.07, rely=0.25)
         # Entry de Database
         self.VarEntry_dbname = tk.StringVar()
-        self.VarEntry_dbname.set("covid")
+        self.VarEntry_dbname.set("dvdrental")
         self.Entry_dbname = tk.Entry(
             self.window_postgresql, textvariable=self.VarEntry_dbname, width=40
         )
@@ -257,6 +257,16 @@ class PyData:
             self.exportBtn["state"] = "normal"
         else:
             self.exportBtn["state"] = "normal"
+
+        if self.button_executor_fx["state"] == "disabled":
+            self.button_executor_fx["state"] = "normal"
+        else:
+            self.button_executor_fx["state"] = "normal"
+
+        if self.button_remove_rows["state"] == "disabled":
+            self.button_remove_rows["state"] = "normal"
+        else:
+            self.button_remove_rows["state"] = "normal"
 
     def Load_data_file(self):
 
@@ -450,7 +460,7 @@ class PyData:
             activeforeground="white",
             width=12,
             height=1,
-            command=lambda: df == ok_data_V(),
+            command=ok_data_V,
         ).place(relx=0.32, rely=0.85)
 
         Cancel_data = tk.Button(
@@ -855,20 +865,22 @@ class PyData:
             text="Search",
             width=13,
             command=None,
+            state="disabled",
         )
         self.button_executor_fx.place(relx=0.83, rely=0)
 
         # button appliquer la formule aux données
-        self.button_apply_fx = tk.Button(
+        self.button_remove_rows = tk.Button(
             self.FrameTableData,
             background="#DCDCDC",
             activebackground="#004C8C",
             activeforeground="white",
-            text="Apply",
+            text="Remove rows",
             width=13,
-            command=self.cc,
+            command=self.remove_record,
+            state="disabled",
         )
-        self.button_apply_fx.place(relx=0.91, rely=0)
+        self.button_remove_rows.place(relx=0.91, rely=0)
 
         self.tv_All_Data = ttk.Treeview(self.FrameTableData)
         self.tv_All_Data.place(relx=0, rely=0.1, relheight=0.75, relwidth=1)
@@ -894,18 +906,80 @@ class PyData:
         # faire en sorte que la barre de défilement remplisse l'axe y du widget Treeview
         treescrolly.pack(side="right", fill="y")
 
-        self.tv_All_Data.bind("<Double-Button-1>", self.cc)
+        self.tv_All_Data.bind("<Double-Button-1>", self.select_record)
+        # self.tv_All_Data.bind("<ButtonRelease-1>", self.cc)
 
-    def cc(self, event):
-        self.wi = tk.Toplevel(self.root)
-        self.wi.grab_set()
-        self.wi.geometry("300x300")
-        self.container = ttk.Frame(self.wi)
-        self.canvas = tk.Canvas(self.container, width=800, height=35)
-        self.scrollbar = ttk.Scrollbar(
-            self.container, orient="horizontal", command=self.canvas.xview
+    def cc(self, e):
+        print(len(self.tv_All_Data.selection()))
+        print([int(k) for k in self.tv_All_Data.selection()])
+
+    def remove_record(self):
+        global nb1
+        nb1 = 0
+
+        if len(self.tv_All_Data.selection()) == 1:
+
+            # self.tv_All_Data.delete(self.tv_All_Data.selection()[0])
+            x = self.tv_All_Data.selection()[0]
+            self.data_pre = self.data_pre.drop(self.data_pre.index[[int(x)]])
+
+        elif len(self.tv_All_Data.selection()) > 1:
+            x = [int(k) for k in self.tv_All_Data.selection()]
+            self.data_pre = self.data_pre.drop(self.data_pre.index[x])
+        else:
+            tk.messagebox.showerror(
+                "Information", "Please select at least one row to delete"
+            )
+            return
+
+        # supprimer les lignes dans le treeview
+        self.clear_data_Table()
+        self.tv_All_Data["column"] = list(self.data_pre.columns)
+        self.tv_All_Data["show"] = "headings"
+
+        for column in self.tv_All_Data["columns"]:
+            self.tv_All_Data.column(column, anchor="w")
+            self.tv_All_Data.heading(column, text=column, anchor="w")
+
+        df_rows = self.data_pre.to_numpy().tolist()
+        for row in df_rows:
+            if nb1 % 2 == 0:
+                self.tv_All_Data.insert(
+                    "",
+                    "end",
+                    iid=nb1,
+                    values=row,
+                    tags=("evenrow",),
+                )
+            else:
+                self.tv_All_Data.insert(
+                    "",
+                    "end",
+                    iid=nb1,
+                    values=row,
+                    tags=("oddrow",),
+                )
+            nb1 += 1
+        self.tv_All_Data.insert("", "end", values="")
+
+    def select_record(self, event):
+
+        self.window_record_update = tk.Toplevel(self.root)
+        self.window_record_update.grab_set()
+        self.window_record_update.geometry("700x200")
+        self.window_record_update.config(background="#FAEBD7")
+        self.window_record_update.iconbitmap("media/logo.ico")
+
+        self.container_record = tk.LabelFrame(
+            self.window_record_update, width=690, background="#FAEBD7"
         )
-        self.scrollable_frame = ttk.Frame(self.canvas)
+        self.canvas = tk.Canvas(
+            self.container_record, width=670, height=35, background="#FAEBD7"
+        )
+        self.scrollbar = ttk.Scrollbar(
+            self.container_record, orient="horizontal", command=self.canvas.xview
+        )
+        self.scrollable_frame = tk.Frame(self.canvas, width=670, background="#FAEBD7")
 
         self.scrollable_frame.bind(
             "<Configure>",
@@ -924,21 +998,69 @@ class PyData:
         label = []
         entry = []
         for j, col in enumerate(cols):
-            label.append(ttk.Label(self.scrollable_frame, text=col))
+            label.append(
+                ttk.Label(
+                    self.scrollable_frame, text=f"{col} :  ", background="#FAEBD7"
+                )
+            )
             label[-1].pack(side="left")
             # vr = tk.StringVar()
             # vr.set(f"{i}")
-            entry.append(tk.Entry(self.scrollable_frame))
+            entry.append(
+                tk.Entry(self.scrollable_frame, bg="#F5F5F5", font=("Helvetica", 10))
+            )
             entry[-1].delete(0, "end")
             entry[-1].insert(0, values[j])
             entry[-1].pack(side="left")
 
-            tk.Label(self.scrollable_frame, text="  ").pack(side="left", pady=5)
+            tk.Label(self.scrollable_frame, text="  ", background="#FAEBD7").pack(
+                side="left", pady=5
+            )
             i += 1
 
-        self.container.pack(side="bottom", fill="x")
-        self.canvas.pack(fill="x")
+        self.container_record.pack(side="top", pady=20)
+        self.canvas.pack()
         self.scrollbar.pack(fill="x")
+
+        def rm():
+            self.remove_record()
+            self.window_record_update.destroy()
+
+        def update():
+            global nb1
+            nb1 = 0
+
+            val = tuple([y.get() for y in entry])
+
+            for n in range(len(self.data_pre.columns)):
+                self.data_pre.iloc[int(self.tv_All_Data.selection()[0]), n] = val[n]
+
+            selected = self.tv_All_Data.focus()
+            self.tv_All_Data.item(selected, text="", values=val)
+
+            self.window_record_update.destroy()
+
+        # Button modifier la ligne
+        self.btn_update_record = tk.Button(
+            self.window_record_update,
+            text="Update record",
+            background="#004C8C",
+            foreground="white",
+            width=20,
+            command=update,
+        )
+        self.btn_update_record.place(relx=0.29, rely=0.65)
+
+        # Button supprimer la ligne
+        self.btn_remove_record = tk.Button(
+            self.window_record_update,
+            text="Remove record",
+            width=20,
+            background="#C60030",
+            foreground="white",
+            command=rm,
+        )
+        self.btn_remove_record.place(relx=0.51, rely=0.65)
 
     def Def_edit_name_col_in_entry(self, event):
         for i in self.Lbox.curselection():
@@ -995,8 +1117,8 @@ class PyData:
         self.tv_All_Data["show"] = "headings"
 
         for column in self.tv_All_Data["columns"]:
-            self.tv_All_Data.column(column, anchor="center")
-            self.tv_All_Data.heading(column, text=column)
+            self.tv_All_Data.column(column, anchor="w")
+            self.tv_All_Data.heading(column, text=column, anchor="w")
 
         df_rows = self.data_pre.to_numpy().tolist()
         for row in df_rows:
