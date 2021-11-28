@@ -59,6 +59,60 @@ class PyData:
         self.window_data_viz.geometry("800x600+15+15")
         self.window_data_viz.resizable(width=False, height=False)
 
+    def fil_data_to_treeview_listbox(self, df, w="all"):
+        def fil_data_to_treeview():
+            global count
+            count = 0
+
+            self.tv_All_Data.tag_configure("oddrow", background="white")
+            self.tv_All_Data.tag_configure("evenrow", background="#D3D3D3")
+
+            # vider le treeview
+            self.tv_All_Data.delete(*self.tv_All_Data.get_children())
+
+            self.tv_All_Data["column"] = list(df.columns)
+            self.tv_All_Data["show"] = "headings"
+
+            for column in self.tv_All_Data["columns"]:
+                self.tv_All_Data.column(column, anchor="w")
+                self.tv_All_Data.heading(column, anchor="w", text=column)
+
+            df_rows = df.to_numpy().tolist()
+            for row in df_rows:
+                if count % 2 == 0:
+                    self.tv_All_Data.insert(
+                        "",
+                        "end",
+                        iid=count,
+                        values=row,
+                        tags=("evenrow",),
+                    )
+                else:
+                    self.tv_All_Data.insert(
+                        "",
+                        "end",
+                        iid=count,
+                        values=row,
+                        tags=("oddrow",),
+                    )
+                count += 1
+
+            self.tv_All_Data.insert("", "end", values="")
+
+        def fil_column_to_listbox():
+            self.Lbox.delete(0, "end")
+            for id, column in enumerate(df.columns):
+                col_typ = f" {column}  : {np.dtype(df[column])}      "
+                self.Lbox.insert(id, col_typ)
+
+        if w == "treeview":
+            fil_data_to_treeview()
+        elif w == "listbox":
+            fil_column_to_listbox()
+        else:
+            fil_data_to_treeview()
+            fil_column_to_listbox()
+
     def Load_Data_PosgreSQL(self):
         self.window_postgresql = tk.Toplevel(self.root)
         self.window_postgresql.grab_set()
@@ -228,11 +282,6 @@ class PyData:
 
         """Cette fonction de switcher les boutons dans le volet transformation de deactive en active. Elle est appeler lorsque on clique on valide le chargement de données (le bouton ok dans le preview data)"""
 
-        if self.RenameCol["state"] == "disabled":
-            self.RenameCol["state"] = "normal"
-        else:
-            self.RenameCol["state"] = "normal"
-
         if self.RomeveCol["state"] == "disabled":
             self.RomeveCol["state"] = "normal"
         else:
@@ -351,7 +400,7 @@ class PyData:
             self.preview_data(self.path_import, self.data_pre)
 
         else:
-            tk.messagebox.showerror("Information", "You did not choose a file")
+            pass
 
     def preview_data(self, path, df):
 
@@ -381,49 +430,11 @@ class PyData:
         def ok_data_V():
 
             """Cette fonction valide les données et affiche toutes les données. Elle est relier au bouton ok pour valider"""
-            global count
-            count = 0
 
-            self.tv_All_Data.tag_configure("oddrow", background="white")
-            self.tv_All_Data.tag_configure("evenrow", background="#D3D3D3")
-
-            clear_data_Table_Listbox()
-            self.tv_All_Data["column"] = list(df.columns)
-            self.tv_All_Data["show"] = "headings"
-
-            for column in self.tv_All_Data["columns"]:
-                self.tv_All_Data.column(column, anchor="w")
-                self.tv_All_Data.heading(column, anchor="w", text=column)
-
-            df_rows = df.to_numpy().tolist()
-            for row in df_rows:
-                if count % 2 == 0:
-                    self.tv_All_Data.insert(
-                        "",
-                        "end",
-                        iid=count,
-                        values=row,
-                        tags=("evenrow",),
-                    )
-                else:
-                    self.tv_All_Data.insert(
-                        "",
-                        "end",
-                        iid=count,
-                        values=row,
-                        tags=("oddrow",),
-                    )
-                count += 1
-
-            self.tv_All_Data.insert("", "end", values="")
-
-            for id, column in enumerate(df.columns):
-                col_typ = f" {column}  : {np.dtype(df[column])}     "
-                self.Lbox.insert(id, col_typ)
-
+            self.fil_data_to_treeview_listbox(df, w="all")
             self.switchButtonState()
-
             self.preview.destroy()
+
             return df
 
         frame1 = tk.LabelFrame(self.preview, text=f"{path}")
@@ -711,7 +722,9 @@ class PyData:
             self.FrameHomeTransData,
             textvariable=self.VarEntryRename,
             font=("Helvetica", 10),
-        ).place(relx=0.3, rely=0.2, relheight=0.08, relwidth=0.3)
+            state="disabled",
+        )
+        self.Entry_RenameColumn.place(relx=0.3, rely=0.2, relheight=0.08, relwidth=0.3)
 
         self.RomeveCol = tk.Button(
             self.FrameHomeTransData,
@@ -807,10 +820,6 @@ class PyData:
 
         self.Lbox.bind("<Double-Button-1>", self.Def_edit_name_col_in_entry)
 
-        # self.test = tk.Label(self.FrameHomeTransData, text="dfcersgsze")
-        # self.test.place(
-        #     relx=0.74, rely=0.3)
-
     def ViewData(self):
 
         self.FrameTableData = tk.LabelFrame(
@@ -883,7 +892,7 @@ class PyData:
         self.button_remove_rows.place(relx=0.91, rely=0)
 
         self.tv_All_Data = ttk.Treeview(self.FrameTableData)
-        self.tv_All_Data.place(relx=0, rely=0.1, relheight=0.75, relwidth=1)
+        self.tv_All_Data.place(relx=0, rely=0.1, relheight=0.9, relwidth=1)
 
         # commande signifie mettre à jour la vue de l'axe y du widget
         treescrolly = tk.Scrollbar(
@@ -907,11 +916,6 @@ class PyData:
         treescrolly.pack(side="right", fill="y")
 
         self.tv_All_Data.bind("<Double-Button-1>", self.select_record)
-        # self.tv_All_Data.bind("<ButtonRelease-1>", self.cc)
-
-    def cc(self, e):
-        print(len(self.tv_All_Data.selection()))
-        print([int(k) for k in self.tv_All_Data.selection()])
 
     def remove_record(self):
         global nb1
@@ -933,34 +937,7 @@ class PyData:
             return
 
         # supprimer les lignes dans le treeview
-        self.clear_data_Table()
-        self.tv_All_Data["column"] = list(self.data_pre.columns)
-        self.tv_All_Data["show"] = "headings"
-
-        for column in self.tv_All_Data["columns"]:
-            self.tv_All_Data.column(column, anchor="w")
-            self.tv_All_Data.heading(column, text=column, anchor="w")
-
-        df_rows = self.data_pre.to_numpy().tolist()
-        for row in df_rows:
-            if nb1 % 2 == 0:
-                self.tv_All_Data.insert(
-                    "",
-                    "end",
-                    iid=nb1,
-                    values=row,
-                    tags=("evenrow",),
-                )
-            else:
-                self.tv_All_Data.insert(
-                    "",
-                    "end",
-                    iid=nb1,
-                    values=row,
-                    tags=("oddrow",),
-                )
-            nb1 += 1
-        self.tv_All_Data.insert("", "end", values="")
+        self.fil_data_to_treeview_listbox(self.data_pre, w="treeview")
 
     def select_record(self, event):
 
@@ -1063,6 +1040,9 @@ class PyData:
         self.btn_remove_record.place(relx=0.51, rely=0.65)
 
     def Def_edit_name_col_in_entry(self, event):
+
+        self.Entry_RenameColumn["state"] = "normal"
+
         for i in self.Lbox.curselection():
             # var_col_name_1.set(box1.get(i))
             # self.VarEntryRename.set(i)
@@ -1072,6 +1052,8 @@ class PyData:
             self.VarEntryRename.set(col_typ)
             self.dct["id"] = i
             self.dct["name"] = col_typ
+
+        self.RenameCol["state"] = "normal"
 
     def RenameColumnTable(self):
 
@@ -1090,56 +1072,28 @@ class PyData:
             self.Lbox.delete(item)
             col_typ = f" {self.VarEntryRename.get()}  : {np.dtype(self.data_pre[self.VarEntryRename.get()])}     "
             self.Lbox.insert(int(self.dct["id"]), col_typ)
-        # renommer dans le données
 
-    def clear_data_Table(self):
-        self.tv_All_Data.delete(*self.tv_All_Data.get_children())
+        self.VarEntryRename.set("")
+        self.Entry_RenameColumn["state"] = "disabled"
+        self.RenameCol["state"] = "disabled"
 
     def DropColumn(self):
+        try:
+            global ColSup
+            nb = 0
 
-        global ColSup
-        nb = 0
+            for i in self.Lbox.curselection():
+                ColSup = self.Lbox.get(i).split("  : ")[0].strip()
+                self.Lbox.delete(i)
 
-        for i in self.Lbox.curselection():
-            ColSup = self.Lbox.get(i).split("  : ")[0].strip()
-            self.Lbox.delete(i)
+            # supprimer la colonne dans le données
+            self.data_pre.drop(ColSup, axis=1, inplace=True)
+            # print(data.head(3))
 
-        # supprimer la colonne dans le données
-        self.data_pre.drop(ColSup, axis=1, inplace=True)
-        # print(data.head(3))
-
-        self.tv_All_Data.tag_configure("oddrow", background="white")
-        self.tv_All_Data.tag_configure("evenrow", background="#D3D3D3")
-
-        # supprimer dans le treeview
-        self.clear_data_Table()
-        self.tv_All_Data["column"] = list(self.data_pre.columns)
-        self.tv_All_Data["show"] = "headings"
-
-        for column in self.tv_All_Data["columns"]:
-            self.tv_All_Data.column(column, anchor="w")
-            self.tv_All_Data.heading(column, text=column, anchor="w")
-
-        df_rows = self.data_pre.to_numpy().tolist()
-        for row in df_rows:
-            if nb % 2 == 0:
-                self.tv_All_Data.insert(
-                    "",
-                    "end",
-                    iid=nb,
-                    values=row,
-                    tags=("evenrow",),
-                )
-            else:
-                self.tv_All_Data.insert(
-                    "",
-                    "end",
-                    iid=nb,
-                    values=row,
-                    tags=("oddrow",),
-                )
-            nb += 1
-        self.tv_All_Data.insert("", "end", values="")
+            # supprimer dans le treeview
+            self.fil_data_to_treeview_listbox(self.data_pre, w="treeview")
+        except:
+            pass
 
     def ExportData(self):
         def ExportGUI(self):
