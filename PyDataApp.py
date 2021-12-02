@@ -107,11 +107,18 @@ class PyData:
 
         if w == "treeview":
             fil_data_to_treeview()
+            self.Fonc_label_nbr_ligne_et_col()
         elif w == "listbox":
             fil_column_to_listbox()
+            self.Fonc_label_nbr_ligne_et_col()
         else:
             fil_data_to_treeview()
             fil_column_to_listbox()
+            self.Fonc_label_nbr_ligne_et_col()
+
+    def Fonc_label_nbr_ligne_et_col(self):
+        tx = f"rows : {self.data_pre.shape[0]}  columns : {self.data_pre.shape[1]}"
+        self.VarNbLigneCol.set(tx)
 
     def Load_Data_PosgreSQL(self):
         self.window_postgresql = tk.Toplevel(self.root)
@@ -748,8 +755,18 @@ class PyData:
         )
         self.AddCol.place(relx=0.65, rely=0.48, relheight=0.13, relwidth=0.18)
 
+        self.Combobox_type_data = ttk.Combobox(
+            self.FrameHomeTransData, values=["float", "integer", "object", "date"]
+        )
+        self.Combobox_type_data.place(relx=0.39, rely=0.51, relwidth=0.25)
+
         self.Lbox = tk.Listbox(
-            self.FrameHomeTransData, bg="#F5F5F5", width=1000, height=1
+            self.FrameHomeTransData,
+            selectbackground="#347083",
+            selectforeground="white",
+            bg="#F5F5F5",
+            width=1000,
+            height=1,
         )
         self.Lbox.place(relx=0.009, rely=0.1, relheight=0.85, relwidth=0.27)
 
@@ -892,7 +909,7 @@ class PyData:
         self.button_remove_rows.place(relx=0.91, rely=0)
 
         self.tv_All_Data = ttk.Treeview(self.FrameTableData)
-        self.tv_All_Data.place(relx=0, rely=0.1, relheight=0.9, relwidth=1)
+        self.tv_All_Data.place(relx=0, rely=0.1, relheight=0.85, relwidth=1)
 
         # commande signifie mettre à jour la vue de l'axe y du widget
         treescrolly = tk.Scrollbar(
@@ -914,6 +931,15 @@ class PyData:
 
         # faire en sorte que la barre de défilement remplisse l'axe y du widget Treeview
         treescrolly.pack(side="right", fill="y")
+
+        self.VarNbLigneCol = tk.StringVar()
+        self.label_nbr_ligne_et_col = tk.Label(
+            self.FrameTableData,
+            textvariable=self.VarNbLigneCol,
+            font=("Helvetica", 9),
+            background="#FAEBD7",
+        )
+        self.label_nbr_ligne_et_col.place(relx=0.02, rely=0.95, relheight=0.05)
 
         self.tv_All_Data.bind("<Double-Button-1>", self.select_record)
 
@@ -938,6 +964,7 @@ class PyData:
 
         # supprimer les lignes dans le treeview
         self.fil_data_to_treeview_listbox(self.data_pre, w="treeview")
+        self.Fonc_label_nbr_ligne_et_col()
 
     def select_record(self, event):
 
@@ -1092,6 +1119,7 @@ class PyData:
 
             # supprimer dans le treeview
             self.fil_data_to_treeview_listbox(self.data_pre, w="treeview")
+            self.Fonc_label_nbr_ligne_et_col()
         except:
             pass
 
