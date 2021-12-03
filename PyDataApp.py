@@ -39,7 +39,7 @@ class PyData:
         self.df = ""
         self.data_origine = pd.DataFrame()
         self.data_pre = pd.DataFrame()
-        self.dct = {"id": "", "name": ""}
+        self.dct = {"id": "", "name": "", "type": ""}
 
         super().__init__()
         self.initUI()
@@ -59,7 +59,36 @@ class PyData:
         self.window_data_viz.geometry("800x600+15+15")
         self.window_data_viz.resizable(width=False, height=False)
 
+    def VerifType(self, df, column):
+        if np.dtype(df[column]) == "object":
+            typ = "string"
+            # typ = f" {column}  : string      "
+        elif np.dtype(df[column]) in ["int32", "int64"]:
+            # typ = f" {column}  : integer      "
+            typ = "integer"
+        elif np.dtype(df[column]) in ["float32", "float32", "float"]:
+            typ = "float"
+            # typ = f" {column}  : float      "
+        elif np.dtype(df[column]) in [
+            "datetime64[ns]",
+            "datetime32[ns]",
+            "datetime64",
+            "datetime32",
+            "datetime",
+            "date",
+        ]:
+            # typ = f" {column}  : datetime      "
+            typ = "datetime"
+        else:
+            typ = np.dtype(df[column])
+            # typ = f" {column}  : {np.dtype(df[column])}      "
+        return typ
+
     def fil_data_to_treeview_listbox(self, df, w="all"):
+        if self.VarCheckBtn_add_index.get():
+            df.reset_index(inplace=True)
+            df = df.rename(columns={"index": "Id"})
+
         def fil_data_to_treeview():
             global count
             count = 0
@@ -102,8 +131,9 @@ class PyData:
         def fil_column_to_listbox():
             self.Lbox.delete(0, "end")
             for id, column in enumerate(df.columns):
-                col_typ = f" {column}  : {np.dtype(df[column])}      "
-                self.Lbox.insert(id, col_typ)
+                # v = self.VerifType(df, column)
+                values_listbox = f" {column}  : {self.VerifType(df, column)}      "
+                self.Lbox.insert(id, values_listbox)
 
         if w == "treeview":
             fil_data_to_treeview()
@@ -294,10 +324,10 @@ class PyData:
         else:
             self.RomeveCol["state"] = "normal"
 
-        if self.AddCol["state"] == "disabled":
-            self.AddCol["state"] = "normal"
-        else:
-            self.AddCol["state"] = "normal"
+        # if self.Btn_Change_type_col["state"] == "disabled":
+        #     self.Btn_Change_type_col["state"] = "normal"
+        # else:
+        #     self.Btn_Change_type_col["state"] = "normal"
 
         if self.transformBtn["state"] == "disabled":
             self.transformBtn["state"] = "normal"
@@ -373,19 +403,13 @@ class PyData:
                     excel_filename = r"{}".format(path)
                     if excel_filename[-4:] == ".csv":
                         df = pd.read_csv(excel_filename)
-                        df.reset_index(inplace=True)
-                        df = df.rename(columns={"index": "Id"})
 
                     elif excel_filename[-4:] == ".txt":
                         df = pd.read_table(excel_filename)
-                        df.reset_index(inplace=True)
-                        df = df.rename(columns={"index": "Id"})
 
                     else:
                         # if sheet == "":
                         df = pd.read_excel(excel_filename)
-                        df.reset_index(inplace=True)
-                        df = df.rename(columns={"index": "Id"})
 
                         # else:
                         #     df1 = pd.read_excel(
@@ -428,11 +452,11 @@ class PyData:
             tv1.delete(*tv1.get_children())
             return None
 
-        def clear_data_Table_Listbox():
-            self.tv_All_Data.delete(*self.tv_All_Data.get_children())
-            self.Lbox.delete(0, "end")
-            # self.Lbox.delete()
-            return None
+        # def clear_data_Table_Listbox():
+        #     self.tv_All_Data.delete(*self.tv_All_Data.get_children())
+        #     self.Lbox.delete(0, "end")
+        #     # self.Lbox.delete()
+        #     return None
 
         def ok_data_V():
 
@@ -445,7 +469,7 @@ class PyData:
             return df
 
         frame1 = tk.LabelFrame(self.preview, text=f"{path}")
-        frame1.place(height=180, width=530, rely=0.05, relx=0.05)
+        frame1.place(height=170, width=530, rely=0.02, relx=0.05)
 
         tv1 = ttk.Treeview(frame1)
         tv1.place(relheight=1, relwidth=1)
@@ -465,6 +489,23 @@ class PyData:
         # faire en sorte que la barre de défilement remplisse l'axe y du widget Treeview
         treescrolly.pack(side="right", fill="y")
 
+        fram_check_btn_lbl = tk.Frame(self.preview)
+        fram_check_btn_lbl.place(relx=0.05, rely=0.73)
+
+        self.VarCheckBtn_add_index = tk.BooleanVar()
+        self.VarCheckBtn_add_index.set(True)
+        CheckBtn_add_index = tk.Checkbutton(
+            fram_check_btn_lbl,
+            variable=self.VarCheckBtn_add_index,
+            command=None,
+        )
+        CheckBtn_add_index.grid(row=0, column=0)
+
+        text_checkbtn_add_index = tk.Label(
+            fram_check_btn_lbl, text="Add an index column"
+        )
+        text_checkbtn_add_index.grid(row=0, column=1)
+
         OkBtn_data = tk.Button(
             self.preview,
             # text="Ok",
@@ -479,7 +520,7 @@ class PyData:
             width=12,
             height=1,
             command=ok_data_V,
-        ).place(relx=0.32, rely=0.85)
+        ).place(relx=0.32, rely=0.87)
 
         Cancel_data = tk.Button(
             self.preview,
@@ -488,7 +529,7 @@ class PyData:
             width=12,
             height=1,
             command=self.CancelPreviwData,
-        ).place(relx=0.48, rely=0.85)
+        ).place(relx=0.48, rely=0.87)
 
         clear_data()
         tv1["column"] = list(df.columns)
@@ -722,7 +763,7 @@ class PyData:
             command=self.RenameColumnTable,
             state="disabled",
         )
-        self.RenameCol.place(relx=0.65, rely=0.2, relheight=0.13, relwidth=0.18)
+        self.RenameCol.place(relx=0.6, rely=0.2, relheight=0.1, relwidth=0.18)
 
         self.VarEntryRename = tk.StringVar()
         self.Entry_RenameColumn = tk.Entry(
@@ -731,7 +772,34 @@ class PyData:
             font=("Helvetica", 10),
             state="disabled",
         )
-        self.Entry_RenameColumn.place(relx=0.3, rely=0.2, relheight=0.08, relwidth=0.3)
+        self.Entry_RenameColumn.place(relx=0.39, rely=0.2, relheight=0.08, relwidth=0.2)
+
+        self.Btn_Change_type_col = tk.Button(
+            self.FrameHomeTransData,
+            background="#DCDCDC",
+            activebackground="#004C8C",
+            activeforeground="white",
+            text="Change type",
+            command=self.change_type_column,
+            state="disabled",
+        )
+        self.Btn_Change_type_col.place(relx=0.6, rely=0.3, relheight=0.1, relwidth=0.18)
+
+        self.label_type = tk.Label(
+            self.FrameHomeTransData, text="Type", background="#FAEBD7"
+        ).place(relx=0.34, rely=0.3)
+
+        self.VarTypeActuel = tk.StringVar()
+        self.Combobox_type_data = ttk.Combobox(
+            self.FrameHomeTransData,
+            values=["float", "integer", "string", "datetime", "boolean"],
+            textvariable=self.VarTypeActuel,
+            # state="readonly",
+            state="disabled",
+            # background="#F5F5F5",
+        )
+        self.Combobox_type_data.place(relx=0.39, rely=0.3, relheight=0.08, relwidth=0.2)
+        # self.current_var.set("new_value")
 
         self.RomeveCol = tk.Button(
             self.FrameHomeTransData,
@@ -742,23 +810,7 @@ class PyData:
             command=self.DropColumn,
             state="disabled",
         )
-        self.RomeveCol.place(relx=0.65, rely=0.34, relheight=0.13, relwidth=0.18)
-
-        self.AddCol = tk.Button(
-            self.FrameHomeTransData,
-            background="#DCDCDC",
-            activebackground="#004C8C",
-            activeforeground="white",
-            text="Add column",
-            command=None,
-            state="disabled",
-        )
-        self.AddCol.place(relx=0.65, rely=0.48, relheight=0.13, relwidth=0.18)
-
-        self.Combobox_type_data = ttk.Combobox(
-            self.FrameHomeTransData, values=["float", "integer", "object", "date"]
-        )
-        self.Combobox_type_data.place(relx=0.39, rely=0.51, relwidth=0.25)
+        self.RomeveCol.place(relx=0.6, rely=0.4, relheight=0.1, relwidth=0.18)
 
         self.Lbox = tk.Listbox(
             self.FrameHomeTransData,
@@ -836,6 +888,43 @@ class PyData:
         self.exportBtn.place(relx=0.7, rely=0.8)
 
         self.Lbox.bind("<Double-Button-1>", self.Def_edit_name_col_in_entry)
+        # self.Lbox.bind("<ButtonRelease-1>", self.GetColumn_Id_Name_Type)
+
+    def GetColumn_Id_Name_Type(self, e):
+
+        for i in self.Lbox.curselection():
+            name = self.Lbox.get(i).split("  : ")[0].strip()
+            typ = self.Lbox.get(i).split("  : ")[1].strip()
+            self.VarTypeActuel.set("")
+            self.VarTypeActuel.set(typ)
+
+    def change_type_column(self):
+        try:
+            select_typ = self.Combobox_type_data.get()
+
+            for i in self.Lbox.curselection():
+                name = self.Lbox.get(i).split("  : ")[0].strip()
+                # typ = self.Lbox.get(i).split("  : ")[1].strip()
+
+                if select_typ == "float":
+                    self.data_pre[name] = self.data_pre[name].astype(float)
+                elif select_typ == "integer":
+                    self.data_pre[name] = self.data_pre[name].astype(int)
+                elif select_typ == "string":
+                    self.data_pre[name] = self.data_pre[name].astype(str)
+                else:
+                    pass
+
+                self.Lbox.delete(i)
+                typ = self.VerifType(self.data_pre, name)
+                maj_value_listbox = f" {name}  : {typ}     "
+                self.Lbox.insert(i, maj_value_listbox)
+
+            self.VarTypeActuel.set("")
+            self.Btn_Change_type_col["state"] = "disabled"
+            self.Combobox_type_data["state"] = "disabled"
+        except:
+            pass
 
     def ViewData(self):
 
@@ -1069,6 +1158,8 @@ class PyData:
     def Def_edit_name_col_in_entry(self, event):
 
         self.Entry_RenameColumn["state"] = "normal"
+        # self.Combobox_type_data["state"] = "normal"
+        self.Combobox_type_data["state"] = "readonly"
 
         for i in self.Lbox.curselection():
             # var_col_name_1.set(box1.get(i))
@@ -1081,28 +1172,39 @@ class PyData:
             self.dct["name"] = col_typ
 
         self.RenameCol["state"] = "normal"
+        self.Btn_Change_type_col["state"] = "normal"
 
     def RenameColumnTable(self):
+        try:
+            for i in self.Lbox.curselection():
+                # var_col_name_1.set(box1.get(i))
+                # self.VarEntryRename.set(i)
 
-        self.data_pre.rename(
-            columns={
-                self.data_pre.columns[int(self.dct["id"])]: self.VarEntryRename.get()
-            },
-            inplace=True,
-        )
+                name = self.Lbox.get(i).split("  : ")[0].strip()
+                typ = self.Lbox.get(i).split("  : ")[1].strip()
 
-        # renommer dans le treeview
-        # print(self.tv_All_Data.column(int(self.dct['id'])))
-        self.tv_All_Data.heading(int(self.dct["id"]), text=self.VarEntryRename.get())
-        # renommer dans la listbox
-        for item in self.Lbox.curselection():
-            self.Lbox.delete(item)
-            col_typ = f" {self.VarEntryRename.get()}  : {np.dtype(self.data_pre[self.VarEntryRename.get()])}     "
-            self.Lbox.insert(int(self.dct["id"]), col_typ)
+            self.data_pre.rename(
+                columns={name: self.VarEntryRename.get()},
+                inplace=True,
+            )
 
-        self.VarEntryRename.set("")
-        self.Entry_RenameColumn["state"] = "disabled"
-        self.RenameCol["state"] = "disabled"
+            # renommer dans le treeview
+            # print(self.tv_All_Data.column(int(self.dct['id'])))
+            self.tv_All_Data.heading(
+                int(self.dct["id"]), text=self.VarEntryRename.get()
+            )
+            # renommer dans la listbox
+            for item in self.Lbox.curselection():
+                self.Lbox.delete(item)
+                typ = self.VerifType(self.data_pre, self.VarEntryRename.get())
+                maj_value_listbox = f" {self.VarEntryRename.get()}  : {typ}     "
+                self.Lbox.insert(item, maj_value_listbox)
+
+            self.VarEntryRename.set("")
+            self.Entry_RenameColumn["state"] = "disabled"
+            self.RenameCol["state"] = "disabled"
+        except:
+            pass
 
     def DropColumn(self):
         try:

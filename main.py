@@ -48,6 +48,6 @@ def main_window():
     # app.root.mainloop()
 
 
-splach_root.after(3000, main_window)
+splach_root.after(1000, main_window)
 
 tk.mainloop()
