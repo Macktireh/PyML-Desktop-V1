@@ -19,11 +19,7 @@ if True:
     from openpyxl import load_workbook
     import psycopg2
 
-
 class PyData:
-
-    # param = {'path': ""}
-    let_user_through = False
 
     def __init__(self):
         root = tk.Tk()
@@ -31,7 +27,7 @@ class PyData:
         # self.root.withdraw()
         self.root.title("PyData Desktop")
         self.root.geometry("1400x800+5+5")
-        self.root.iconbitmap("media/logo.ico")
+        self.root.iconbitmap("../media/logo.ico")
         self.root.config(background="#FAEBD7")
         self.path_import = None
         self.path_export = None
@@ -55,7 +51,7 @@ class PyData:
         self.window_data_viz = tk.Toplevel(self.root)
         self.window_data_viz.grab_set()
         self.window_data_viz.title("Data Visualization")
-        self.window_data_viz.iconbitmap("media/logo.ico")
+        self.window_data_viz.iconbitmap("../media/logo.ico")
         self.window_data_viz.geometry("800x600+15+15")
         self.window_data_viz.resizable(width=False, height=False)
 
@@ -154,7 +150,7 @@ class PyData:
         self.window_postgresql = tk.Toplevel(self.root)
         self.window_postgresql.grab_set()
         self.window_postgresql.title("PostgreSQL database")
-        self.window_postgresql.iconbitmap("media/logo.ico")
+        self.window_postgresql.iconbitmap("../media/logo.ico")
         self.window_postgresql.geometry("500x600+15+15")
         self.window_postgresql.resizable(width=False, height=False)
 
@@ -207,7 +203,7 @@ class PyData:
                 tk.messagebox.showerror("Information", "some fields are not filled")
 
         # Importation de l'icone de progresql
-        self.img = PhotoImage(file="media/postgresql.png")
+        self.img = PhotoImage(file="../media/postgresql.png")
         self.img = self.img.subsample(35, 35)
 
         # afficher l'icone de progresql
@@ -444,7 +440,7 @@ class PyData:
         self.preview = tk.Toplevel(self.root)
         self.preview.grab_set()
         self.preview.title("Previous Data")
-        self.preview.iconbitmap("media/logo.ico")
+        self.preview.iconbitmap("../media/logo.ico")
         self.preview.geometry("600x250+15+15")
         self.preview.resizable(width=False, height=False)
 
@@ -646,22 +642,22 @@ class PyData:
         ).place(relx=0.09, rely=0.01)
 
         # charger les icones images
-        self.excelIcon = PhotoImage(file="media/excel.png")
+        self.excelIcon = PhotoImage(file="../media/excel.png")
         self.excelIcon = self.excelIcon.subsample(10, 10)
 
-        self.csvIcon = PhotoImage(file="media/csv.png")
+        self.csvIcon = PhotoImage(file="../media/csv.png")
         self.csvIcon = self.csvIcon.subsample(10, 10)
 
-        self.txtIcon = PhotoImage(file="media/txt.png")
+        self.txtIcon = PhotoImage(file="../media/txt.png")
         self.txtIcon = self.txtIcon.subsample(20, 20)
 
-        self.postgreIcon = PhotoImage(file="media/postgresql.png")
+        self.postgreIcon = PhotoImage(file="../media/postgresql.png")
         self.postgreIcon = self.postgreIcon.subsample(50, 50)
 
-        self.mysqlIcon = PhotoImage(file="media/mysql.png")
+        self.mysqlIcon = PhotoImage(file="../media/mysql.png")
         self.mysqlIcon = self.mysqlIcon.subsample(33, 33)
 
-        self.mongodbIcon = PhotoImage(file="media/mongodb.png")
+        self.mongodbIcon = PhotoImage(file="../media/mongodb.png")
         self.mongodbIcon = self.mongodbIcon.subsample(13, 13)
 
         # cadre de boutons
@@ -836,13 +832,13 @@ class PyData:
         self.treescrollx.pack(side="bottom", fill="x")
         self.treescrolly.pack(side="right", fill="y")
 
-        self.transformIcon = PhotoImage(file="media/transform.png")
+        self.transformIcon = PhotoImage(file="../media/transform.png")
         self.transformIcon = self.transformIcon.subsample(40, 40)
 
-        self.saveIcon = PhotoImage(file="media/save.png")
+        self.saveIcon = PhotoImage(file="../media/save.png")
         self.saveIcon = self.saveIcon.subsample(40, 40)
 
-        self.exportIcon = PhotoImage(file="media/export.png")
+        self.exportIcon = PhotoImage(file="../media/export.png")
         self.exportIcon = self.exportIcon.subsample(35, 35)
 
         self.transformBtn = tk.Button(
@@ -1061,7 +1057,7 @@ class PyData:
         self.window_record_update.grab_set()
         self.window_record_update.geometry("700x200")
         self.window_record_update.config(background="#FAEBD7")
-        self.window_record_update.iconbitmap("media/logo.ico")
+        self.window_record_update.iconbitmap("../media/logo.ico")
 
         self.container_record = tk.LabelFrame(
             self.window_record_update, width=690, background="#FAEBD7"
@@ -1305,7 +1301,7 @@ class PyData:
             self.Exportation = tk.Toplevel(self.root)
             self.Exportation.grab_set()
             self.Exportation.title("Previous Data")
-            self.Exportation.iconbitmap("media/logo.ico")
+            self.Exportation.iconbitmap("../media/logo.ico")
             self.Exportation.geometry("500x200+15+15")
             # self.Exportation.config(background="#CCCCCC")
             self.Exportation.resizable(width=False, height=False)
@@ -1368,5 +1364,3 @@ class PyData:
             ).place(relx=0.50, rely=0.8)
 
         ExportGUI(self)
-
-    # ------------ Fx : formul

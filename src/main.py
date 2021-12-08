@@ -30,7 +30,7 @@ BtnExit = tk.Label(
 BtnExit.place(relx=0.94, rely=0.003)
 BtnExit.bind("<Button-1>", Exit)
 
-splach_logo = PhotoImage(file="media/WML.png")
+splach_logo = PhotoImage(file="../media/WML.png")
 splach_logo = splach_logo.subsample(2, 2)
 
 # afficher l'icone de progresql
