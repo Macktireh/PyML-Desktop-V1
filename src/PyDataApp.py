@@ -1057,7 +1057,7 @@ class PyData:
         self.window_record_update.grab_set()
         self.window_record_update.geometry("700x200")
         self.window_record_update.config(background="#FAEBD7")
-        self.window_record_update.iconbitmap("../media/logo.ico")
+        self.window_record_update.iconbitmap("media/logo.ico")
 
         self.container_record = tk.LabelFrame(
             self.window_record_update, width=690, background="#FAEBD7"
@@ -1222,6 +1222,7 @@ class PyData:
             pass
 
     def ExportData(self):
+        
         def ExportGUI(self):
 
             # def update_observer_path_folder(*args):
