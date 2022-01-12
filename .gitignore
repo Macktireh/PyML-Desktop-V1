@@ -1,5 +1,6 @@
 __pycache__
-_venv
+.venv
 _verif
 .vscode
 packages
+.env

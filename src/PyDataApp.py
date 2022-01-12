@@ -6,18 +6,21 @@ if True:
     import tempfile
     import pandas as pd
     import numpy as np
+    import psycopg2
+    
     from tkinter import font
     from tkinter.constants import RADIOBUTTON, RAISED
     from tkinter.scrolledtext import ScrolledText
     from tkinter import PhotoImage
     from PIL import Image, ImageTk
-
-    # from tkinter_custom_button import TkinterCustomButton
     from tkinter import filedialog, messagebox, ttk
     from tkinter.constants import ACTIVE
     from datetime import date, datetime
     from openpyxl import load_workbook
-    import psycopg2
+    from dotenv import load_dotenv
+    # from tkinter_custom_button import TkinterCustomButton
+    
+load_env = load_dotenv()
 
 class PyData:
 
@@ -224,7 +227,7 @@ class PyData:
         ).place(relx=0.07, rely=0.2)
         # Entry de host
         self.VarEntry_host = tk.StringVar()
-        self.VarEntry_host.set("localhost")
+        self.VarEntry_host.set(os.getenv('HOST'))
         self.VarEntry_host = tk.Entry(
             self.window_postgresql, textvariable=self.VarEntry_host, width=40
         )
@@ -236,7 +239,7 @@ class PyData:
         ).place(relx=0.07, rely=0.25)
         # Entry de Database
         self.VarEntry_dbname = tk.StringVar()
-        self.VarEntry_dbname.set("dvdrental")
+        self.VarEntry_dbname.set(os.getenv('DBNAME'))
         self.Entry_dbname = tk.Entry(
             self.window_postgresql, textvariable=self.VarEntry_dbname, width=40
         )
@@ -248,7 +251,7 @@ class PyData:
         ).place(relx=0.07, rely=0.3)
         # Entry de Port
         self.VarEntry_port = tk.StringVar()
-        self.VarEntry_port.set("5444")
+        self.VarEntry_port.set(os.getenv('PORT'))
         self.Entry_port = tk.Entry(
             self.window_postgresql, textvariable=self.VarEntry_port, width=40
         )
@@ -259,7 +262,7 @@ class PyData:
             self.window_postgresql, text="User Name", font=("Helvetica", 10)
         ).place(relx=0.07, rely=0.35)
         self.VarEntryUser = tk.StringVar()
-        self.VarEntryUser.set("enterprisedb")
+        self.VarEntryUser.set(os.getenv('USER'))
         self.EntryUser = tk.Entry(
             self.window_postgresql, textvariable=self.VarEntryUser, width=40
         ).place(relx=0.28, rely=0.35)
@@ -269,7 +272,7 @@ class PyData:
             self.window_postgresql, text="Password", font=("Helvetica", 9)
         ).place(relx=0.07, rely=0.4)
         self.VarEntrypassword = tk.StringVar()
-        self.VarEntrypassword.set("charco97")
+        self.VarEntrypassword.set(os.getenv('PASSWORD'))
         self.Entrypassword = tk.Entry(
             self.window_postgresql,
             textvariable=self.VarEntrypassword,
