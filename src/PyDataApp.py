@@ -38,7 +38,7 @@ class PyData:
         self.dct = {"id": "", "name": "", "type": ""}
 
         super().__init__()
-        self.initUI()
+        self.BarMenu()
         self.WedgetHome()
         self.widgetGetData()
         self.ViewData()
@@ -539,6 +539,11 @@ class PyData:
             tv1.insert("", "end", values=row)
 
         return None
+    
+    def CancelPreviwData(self):
+        self.data_origine = pd.DataFrame()
+        self.data_pre = pd.DataFrame()
+        self.preview.destroy()
 
     def Excel(self):
         self.typefile = "Excel"
@@ -559,12 +564,7 @@ class PyData:
         self.Load_Data_PosgreSQL()
         # self.preview_data(self.path_import, self.data_pre)
 
-    def CancelPreviwData(self):
-        self.data_origine = pd.DataFrame()
-        self.data_pre = pd.DataFrame()
-        self.preview.destroy()
-
-    def initUI(self):
+    def BarMenu(self):
 
         self.menubar = tk.Menu(self.root, background="#856ff8", fg="white")
         self.root.config(menu=self.menubar)
